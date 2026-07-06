@@ -120,7 +120,7 @@ export function ProfilePage() {
         console.log(session?.user)
 
         const storedUserId =
-            typeof session?.user?.userId === "string" ? session.user.userId : null;
+            typeof session?.user?.id === "string" ? session.user.id : null;
         
         console.log(storedUserId)
         
@@ -131,7 +131,7 @@ export function ProfilePage() {
         }
 
         const fallbackUser = getStoredAuthUser();
-        const derivedUserId = typeof fallbackUser?.userId === "string" ? fallbackUser.userId : null;
+        const derivedUserId = typeof fallbackUser?.id === "string" ? fallbackUser.id : null;
         if (derivedUserId) {
             setUserId(derivedUserId);
         }
