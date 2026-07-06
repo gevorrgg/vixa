@@ -117,7 +117,7 @@ export function ProfilePage() {
     useEffect(() => {
         const session = getStoredAuthSession();
 
-        console.log(session?.user)
+        console.log(session)
 
         const storedUserId =
             typeof session?.user?.id === "string" ? session.user.id : null;
