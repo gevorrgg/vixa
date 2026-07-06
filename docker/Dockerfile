@@ -20,7 +20,7 @@ RUN npm install
 
 COPY backend .
 
-COPY --from=build /app/frontend/dist ./dist
+COPY --from=build /app/frontend/dist ./src/dist
 
 EXPOSE 8080
 CMD ["node", "src/app.js"]
