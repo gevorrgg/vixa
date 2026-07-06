@@ -4,7 +4,7 @@ FROM node:22 AS build
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY frontend .
 RUN npm run build
@@ -16,7 +16,7 @@ FROM node:22
 WORKDIR /app/backend
 
 COPY backend/package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY backend .
 
