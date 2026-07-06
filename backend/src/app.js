@@ -11,7 +11,7 @@ const videoRouter = require('./routes/videoRoutes')
 const app = express()
 
 app.use(express.json())
-app.use(express.static('dist'))
+app.use(express.static(path.join(__dirname, "dist")));
 
 // ===== API ROUTES =====
 app.use('/api/auth', authRouter)
