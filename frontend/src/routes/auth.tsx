@@ -75,7 +75,8 @@ function AuthPage() {
 
             const user = extractUser(body);
             setAuthSession({ token, user: user ?? (extractUserId(body) ? { id: extractUserId(body) } : null) });
-            navigate({ to: "/" });
+            const path = navigate({ to: "/" });
+            console.log(path)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Something went wrong");
         } finally {
