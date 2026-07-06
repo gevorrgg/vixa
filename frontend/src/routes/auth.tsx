@@ -70,6 +70,8 @@ function AuthPage() {
             }
 
             const token = extractToken(body);
+
+            console.log(token)
             if (!token) throw new Error("The backend did not return an authentication token.");
 
             const user = extractUser(body);
