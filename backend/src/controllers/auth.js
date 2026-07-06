@@ -35,9 +35,14 @@ class AuthController {
 
         let serviceResponse = null
 
-        if (authname.includes("@")) {
-            if (!isValidEmail(authname))
+        if (!authname || !password) { 
+            return res.status(400).json({ ok: false, message: "Missing credentials" })
+        }
+
+        if ( authname.includes("@")) {
+            if (!isValidEmail(authname)) {
                 return res.status(400).json({ ok: false, message: "Invalid Email" })
+            }
 
             serviceResponse = await AuthService.loginUserByEmail(authname, password)
         } else if (isValidUsername(authname))
@@ -52,22 +57,28 @@ class AuthController {
                 .json({ ok: false, message: serviceResponse.message })
         }
 
+        console.log(serviceResponse.token)
+
         return res.json({
             ok: true,
             message: serviceResponse.message,
             token: serviceResponse.token,
-            userId: serviceResponse.id ?? serviceResponse.userId,
+            userId: serviceResponse.id,
         })
     }
 
     static async register (req, res) {
         const { email, username, password } = req.body
 
-        if (!isValidUsername(username))
+        if (!username || !isValidUsername(username))
             return res.status(400).json({ ok: false, message: "Invalid Username" })
 
-        if (!isValidEmail(email))
+        if (!email || !isValidEmail(email))
             return res.status(400).json({ ok: false, message: "Invalid Email" })
+
+        if (!password) {
+            return res.status(400).json({ ok: false, message: "Weak password" })
+        }
 
         const serviceResponse = await AuthService.registerUser(email, username, password)
 
@@ -81,12 +92,16 @@ class AuthController {
             ok: true,
             message: serviceResponse.message,
             token: serviceResponse.token,
-            userId: serviceResponse.id ?? serviceResponse.userId,
+            userId: serviceResponse.id,
         })
     }
 
-    static async getMe(req, res) {
-        res.json(req.user)
+    static async getMe (req, res) {
+        if (!req.user) {
+            return res.status(401).json({ ok: false, message: "Unauthorized" })
+        }
+
+        return res.json(req.user)
     }
 }
 

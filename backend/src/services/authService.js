@@ -75,7 +75,7 @@ class AuthService {
       if (!isValid)
         return { status: 401, ok: false, message: 'Invalid password' }
 
-      const jwtToken = generateJwtToken(user)
+        const jwtToken = generateJwtToken({ userId: user.id })
 
       return { status: 200, ok: true, token: jwtToken }
     } catch (error) {
@@ -97,7 +97,7 @@ class AuthService {
       if (!isValid)
         return { status: 401, ok: false, message: 'Invalid password' }
 
-      const jwtToken = generateJwtToken(user)
+        const jwtToken = generateJwtToken({ userId: user.id })
 
       return { status: 200, ok: true, token: jwtToken }
     } catch (error) {
