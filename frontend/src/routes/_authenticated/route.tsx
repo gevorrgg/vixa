@@ -1,12 +1,13 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-async function getMe() {
-  const res = await fetch("/api/auth/me", {
-    credentials: "include",
-  });
+import { apiFetch } from "../../lib/api-client";
 
-  if (!res.ok) return null;
-  return res.json();
+async function getMe() {
+  try {
+    return await apiFetch("/api/auth/me");
+  } catch {
+    return null;
+  }
 }
 
 export const Route = createFileRoute("/_authenticated")({

@@ -1,8 +1,11 @@
 const AUTH_STORAGE_KEY = "streamvibe_auth_session";
-const DEFAULT_API_BASE = "http://localhost:8080";
 
 const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
-const API_BASE = env.VITE_API_URL?.replace(/\/$/, "") ?? DEFAULT_API_BASE;
+const API_BASE = env.VITE_API_URL?.replace(/\/$/, "")
+
+if (!API_BASE) { 
+    throw new Error('Unable to connect to server')
+}
 
 type StoredUser = {
   id?: string;
