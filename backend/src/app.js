@@ -9,13 +9,8 @@ const videoRouter = require('./routes/videoRoutes')
 
 const app = express()
 
-// ===== CORS =====
-app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
-}))
-
 app.use(express.json())
+app.use(express.static('dist'))
 
 // ===== API ROUTES =====
 app.use('/api/auth', authRouter)
