@@ -100,7 +100,6 @@ function humanReadable(n: number): string {
 
 /* ── main ───────────────────────────────────────────────────────────── */
 export function ProfilePage() {
-    console.log('ProfilePage2')
     const navigate = useNavigate();
     const { toast, showToast } = useToast();
 
@@ -118,7 +117,9 @@ export function ProfilePage() {
     useEffect(() => {
         const session = getStoredAuthSession();
         const storedUserId =
-            typeof session?.user?.id === "string" ? session.user.id : null;
+            typeof session?.user?.userId === "string" ? session.user.userId : null;
+        
+        
         if (storedUserId) {
             setUserId(storedUserId);
             return;
