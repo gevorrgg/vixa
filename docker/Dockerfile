@@ -1,5 +1,5 @@
 # build frontend
-FROM node:18 AS build
+FROM node:22 AS build
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN npm run build
 
 
 # backend
-FROM node:18
+FROM node:22
 
 WORKDIR /app
 
