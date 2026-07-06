@@ -23,6 +23,10 @@ app.get('/api/health', (req, res) => {
   res.json({ ok: true })
 })
 
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, "dist/index.html"));
+})
+
 // ===== start server =====
 const PORT = process.env.PORT || 8080
 
