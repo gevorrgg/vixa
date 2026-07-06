@@ -103,7 +103,7 @@ export function ProfilePage() {
     const navigate = useNavigate();
     const { toast, showToast } = useToast();
 
-    const [userId, setUserId] = useState<string | null>(null);
+    const [userId, setUserId] = useState<number | null>(null);
     const [profile, setProfile] = useState<ApiProfile | null>(null);
     const [stats, setStats] = useState<ApiStats>({ videosCount: 0, followersCount: 0, totalViews: 0 });
     const [videos, setVideos] = useState<ApiVideo[]>([]);
@@ -120,7 +120,7 @@ export function ProfilePage() {
         console.log(session)
 
         const storedUserId =
-            typeof session?.user?.id === "string" ? session.user.id : null;
+            typeof session?.user?.id === "number" ? session.user.id : null;
         
         console.log(storedUserId)
         
@@ -131,7 +131,7 @@ export function ProfilePage() {
         }
 
         const fallbackUser = getStoredAuthUser();
-        const derivedUserId = typeof fallbackUser?.id === "string" ? fallbackUser.id : null;
+        const derivedUserId = typeof fallbackUser?.id === "number" ? fallbackUser.id : null;
         if (derivedUserId) {
             setUserId(derivedUserId);
         }
