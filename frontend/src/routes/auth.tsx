@@ -62,10 +62,9 @@ function AuthPage() {
 
             const text = await res.text();
             const body = text ? safeJson(text) : null;
+            const response = body as Record<string, unknown>;
 
-            console.log(res)
-
-            if (!res.ok) {
+            if (!response.ok) {
                 const message = extractErrorMessage(body) ?? "Authentication failed";
                 throw new Error(message);
             }
