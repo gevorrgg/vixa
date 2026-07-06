@@ -116,8 +116,13 @@ export function ProfilePage() {
     /* ── load auth + data ─────────────────────────────────────────────── */
     useEffect(() => {
         const session = getStoredAuthSession();
+
+        console.log(session?.user)
+
         const storedUserId =
             typeof session?.user?.userId === "string" ? session.user.userId : null;
+        
+        console.log(storedUserId)
         
         
         if (storedUserId) {
@@ -126,7 +131,7 @@ export function ProfilePage() {
         }
 
         const fallbackUser = getStoredAuthUser();
-        const derivedUserId = typeof fallbackUser?.id === "string" ? fallbackUser.id : null;
+        const derivedUserId = typeof fallbackUser?.userId === "string" ? fallbackUser.userId : null;
         if (derivedUserId) {
             setUserId(derivedUserId);
         }
