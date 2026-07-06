@@ -4,8 +4,12 @@ import { getStoredAuthSession, setAuthSession } from "../lib/api-client";
 import "../routeTree.gen";
 
 const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
-const apiBase = env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8080";
-console.log(env.VITE_API_URL)
+const apiBase = import.meta.env.VITE_API_URL?.replace(/\/$/, "");
+
+if (!apiBase) {
+  throw new Error("VITE_API_URL is not defined");
+}
+
 const signupEndpoint = env.VITE_AUTH_SIGNUP_URL ?? `${apiBase}/api/auth/register`;
 const loginEndpoint = env.VITE_AUTH_LOGIN_URL ?? `${apiBase}/api/auth/login`;
 
