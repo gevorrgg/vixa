@@ -37,7 +37,7 @@ services:
     depends_on:
       - postgres
     env_file:
-      - ../.env
+      - ../backend/.env
 
 volumes:
   pg_data:
