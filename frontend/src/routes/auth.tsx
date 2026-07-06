@@ -62,16 +62,15 @@ function AuthPage() {
 
             const text = await res.text();
             const body = text ? safeJson(text) : null;
-            const response = body as Record<string, unknown>;
 
-            if (!response.ok) {
+            if (!res.ok) {
                 const message = extractErrorMessage(body) ?? "Authentication failed";
                 throw new Error(message);
             }
 
             const token = extractToken(body);
 
-            console.log(token)
+
             if (!token) throw new Error("The backend did not return an authentication token.");
 
             const user = extractUser(body);

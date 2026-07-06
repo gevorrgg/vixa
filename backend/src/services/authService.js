@@ -23,7 +23,7 @@ class AuthService {
     switch (error.constraint) {
       case 'users_email_key': {
         return {
-          status: 200,
+          status: 401,
           ok: false,
           message: 'Email has already been used for registration'
         }
@@ -31,7 +31,7 @@ class AuthService {
       case 'users_username_unique':
       case 'users_username_key': {
         return {
-          status: 200,
+          status: 401,
           ok: false,
           message: 'Username is already taken'
         }
