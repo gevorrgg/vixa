@@ -99,7 +99,8 @@ function AuthPage() {
 
   function extractToken(body: unknown): string | null {
     if (!body || typeof body !== "object") return null;
-    const candidate = body as Record<string, unknown>;
+      const candidate = body as Record<string, unknown>;
+      console.log(candidate)
     if (typeof candidate.token === "string" && candidate.token) return candidate.token;
     if (typeof candidate.access_token === "string" && candidate.access_token) return candidate.access_token;
     if (typeof candidate.accessToken === "string" && candidate.accessToken) return candidate.accessToken;

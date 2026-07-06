@@ -57,8 +57,6 @@ class AuthController {
                 .json({ ok: false, message: serviceResponse.message })
         }
 
-        console.log(serviceResponse.token)
-
         return res.json({
             ok: true,
             message: serviceResponse.message,
