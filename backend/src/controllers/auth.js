@@ -61,7 +61,7 @@ class AuthController {
             ok: true,
             message: serviceResponse.message,
             token: serviceResponse.token,
-            userId: serviceResponse.id,
+            user: serviceResponse.user
         })
     }
 
@@ -90,7 +90,7 @@ class AuthController {
             ok: true,
             message: serviceResponse.message,
             token: serviceResponse.token,
-            userId: serviceResponse.id,
+            user: serviceResponse.user
         })
     }
 
