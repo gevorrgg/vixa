@@ -5,7 +5,7 @@ import "../routeTree.gen";
 
 const env = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env ?? {};
 const apiBase = env.VITE_API_URL?.replace(/\/$/, "") ?? "http://localhost:8080";
-console.log(apiBase)
+console.log(env.VITE_API_URL)
 const signupEndpoint = env.VITE_AUTH_SIGNUP_URL ?? `${apiBase}/api/auth/register`;
 const loginEndpoint = env.VITE_AUTH_LOGIN_URL ?? `${apiBase}/api/auth/login`;
 
