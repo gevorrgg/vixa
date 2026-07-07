@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../../lib/api-client";
 import type { ApiProfile } from "./ProfilePage";
 
@@ -18,7 +18,6 @@ const GENDERS = [
     { v: "prefer-not", label: "Prefer not to say" },
 ];
 
-// Теперь поле всегда попадает в patch (в т.ч. пустая строка = очистка)
 function setPatch(patch: Record<string, unknown>, field: string, value: string) {
     patch[field] = value.trim();
 }
@@ -32,12 +31,13 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
     const [gender, setGender] = useState(profile.gender ?? "");
     const [avatarFile, setAvatarFile] = useState<File | null>(null);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(profile.avatarUrl);
-    const [avatarRemoved, setAvatarRemoved] = useState(false); // новый флаг
+    const [avatarRemoved, setAvatarRemoved] = useState(false);
     const [saving, setSaving] = useState(false);
     const [handleError, setHandleError] = useState<string | null>(null);
     const [drag, setDrag] = useState(false);
+    const [uploadZoneOpen, setUploadZoneOpen] = useState(false); // новое: зона скрыта по умолчанию
     const fileRef = useRef<HTMLInputElement>(null);
-    const objectUrlRef = useRef<string | null>(null); // для отзыва blob URL
+    const objectUrlRef = useRef<string | null>(null);
 
     useEffect(() => {
         function onKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
@@ -46,7 +46,6 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
         return () => {
             document.removeEventListener("keydown", onKey);
             document.body.classList.remove("modal-open");
-            // отзываем blob URL при размонтировании
             if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
         };
     }, [onClose]);
@@ -55,7 +54,6 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
         if (!f.type.startsWith("image/")) return onError("⚠️ Please select a valid image file");
         if (f.size > 5 * 1024 * 1024) return onError("⚠️ Image must be under 5MB");
 
-        // отзываем предыдущий blob URL, если был
         if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
 
         const url = URL.createObjectURL(f);
@@ -63,7 +61,8 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
 
         setAvatarFile(f);
         setAvatarPreview(url);
-        setAvatarRemoved(false); // выбрали новый файл — отменяет "удаление"
+        setAvatarRemoved(false);
+        setUploadZoneOpen(false); // файл выбран — можно снова свернуть зону
     }
 
     function removeAvatar() {
@@ -73,9 +72,29 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
         }
         setAvatarFile(null);
         setAvatarPreview(null);
-        setAvatarRemoved(true); // помечаем, что аватар нужно убрать на бэке
+        setAvatarRemoved(true);
         if (fileRef.current) fileRef.current.value = "";
     }
+
+    // --- проверка на "есть ли изменения" ---
+    const isDirty = useMemo(() => {
+        const trimmedName = name.trim();
+        const trimmedUsername = username.trim().toLowerCase();
+        const trimmedBio = bio.trim();
+        const trimmedLocation = location.trim();
+        const trimmedWebsite = website.trim();
+
+        if (trimmedName !== (profile.name ?? "").trim()) return true;
+        if (trimmedUsername !== (profile.username ?? "").trim().toLowerCase()) return true;
+        if (trimmedBio !== (profile.bio ?? "").trim()) return true;
+        if (trimmedLocation !== (profile.location ?? "").trim()) return true;
+        if (trimmedWebsite !== (profile.website ?? "").trim()) return true;
+        if (gender !== (profile.gender ?? "")) return true;
+        if (avatarFile) return true; // выбран новый файл
+        if (avatarRemoved && profile.avatarUrl) return true; // аватар явно удалён
+
+        return false;
+    }, [name, username, bio, location, website, gender, avatarFile, avatarRemoved, profile]);
 
     async function save() {
         const finalUsername = username.trim().toLowerCase();
@@ -115,7 +134,6 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
             if (avatarKey) {
                 patch.avatarKey = avatarKey;
             } else if (avatarRemoved && profile.avatarUrl) {
-                // новый файл не выбран, но старый аватар явно удалили
                 patch.avatarKey = null;
             }
 
@@ -177,29 +195,40 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
                     </div>
                     <div className="ep-avatar-right">
                         <strong style={{ fontSize: "0.85rem", display: "block", marginBottom: 10 }}>Avatar</strong>
-                        <div
-                            className={`avatar-upload-zone${drag ? " dragover" : ""}`}
-                            onClick={() => fileRef.current?.click()}
-                            onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-                            onDragLeave={() => setDrag(false)}
-                            onDrop={(e) => {
-                                e.preventDefault();
-                                setDrag(false);
-                                const f = e.dataTransfer.files[0];
-                                if (f) pickAvatar(f);
-                            }}
-                        >
-                            <input
-                                ref={fileRef}
-                                type="file"
-                                accept="image/*"
-                                style={{ display: "none" }}
-                                onChange={(e) => e.target.files?.[0] && pickAvatar(e.target.files[0])}
-                            />
-                            <div style={{ fontSize: "1.4rem" }}>🖼</div>
-                            <p>{avatarFile ? avatarFile.name : "Click or drag to upload"}</p>
-                            <small>JPG, PNG, WebP · max 5MB</small>
-                        </div>
+
+                        {!uploadZoneOpen ? (
+                            <button
+                                type="button"
+                                className="btn-cancel"
+                                onClick={() => setUploadZoneOpen(true)}
+                            >
+                                Upload
+                            </button>
+                        ) : (
+                            <div
+                                className={`avatar-upload-zone${drag ? " dragover" : ""}`}
+                                onClick={() => fileRef.current?.click()}
+                                onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+                                onDragLeave={() => setDrag(false)}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    setDrag(false);
+                                    const f = e.dataTransfer.files[0];
+                                    if (f) pickAvatar(f);
+                                }}
+                            >
+                                <input
+                                    ref={fileRef}
+                                    type="file"
+                                    accept="image/*"
+                                    style={{ display: "none" }}
+                                    onChange={(e) => e.target.files?.[0] && pickAvatar(e.target.files[0])}
+                                />
+                                <div style={{ fontSize: "1.4rem" }}>🖼</div>
+                                <p>{avatarFile ? avatarFile.name : "Click or drag to upload"}</p>
+                                <small>JPG, PNG, WebP · max 5MB</small>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -264,9 +293,11 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
 
                 <div className="modal-actions">
                     <button className="btn-cancel" onClick={onClose} disabled={saving}>Cancel</button>
-                    <button className="btn-upload" onClick={save} disabled={saving}>
-                        {saving ? "Saving…" : "💾 Save Changes"}
-                    </button>
+                    {isDirty && (
+                        <button className="btn-upload" onClick={save} disabled={saving}>
+                            {saving ? "Saving…" : "💾 Save Changes"}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
