@@ -18,8 +18,33 @@ const GENDERS = [
     { v: "prefer-not", label: "Prefer not to say" },
 ];
 
-function setPatch(patch: Record<string, unknown>, field: string, value: string) {
-    patch[field] = value.trim();
+// Строит patch только из полей, которые реально отличаются от исходного profile.
+// Если поле было непустым, а стало пустым — это тоже считается изменением (очистка).
+function buildPatch(
+    profile: ApiProfile,
+    current: { name: string; username: string; bio: string; location: string; website: string; gender: string },
+): Record<string, unknown> {
+    const patch: Record<string, unknown> = {};
+
+    const fields: Array<[keyof typeof current, string | null]> = [
+        ["name", profile.name],
+        ["username", profile.username],
+        ["bio", profile.bio],
+        ["location", profile.location],
+        ["website", profile.website],
+        ["gender", profile.gender],
+    ];
+
+    for (const [field, prevRaw] of fields) {
+        const prev = (prevRaw ?? "").trim();
+        const next = current[field].trim();
+
+        if (next !== prev) {
+            patch[field] = next;
+        }
+    }
+
+    return patch;
 }
 
 export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved, onError }: Props) {
@@ -35,7 +60,7 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
     const [saving, setSaving] = useState(false);
     const [handleError, setHandleError] = useState<string | null>(null);
     const [drag, setDrag] = useState(false);
-    const [uploadZoneOpen, setUploadZoneOpen] = useState(false); // новое: зона скрыта по умолчанию
+    const [uploadZoneOpen, setUploadZoneOpen] = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
     const objectUrlRef = useRef<string | null>(null);
 
@@ -62,7 +87,7 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
         setAvatarFile(f);
         setAvatarPreview(url);
         setAvatarRemoved(false);
-        setUploadZoneOpen(false); // файл выбран — можно снова свернуть зону
+        setUploadZoneOpen(false);
     }
 
     function removeAvatar() {
@@ -90,8 +115,8 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
         if (trimmedLocation !== (profile.location ?? "").trim()) return true;
         if (trimmedWebsite !== (profile.website ?? "").trim()) return true;
         if (gender !== (profile.gender ?? "")) return true;
-        if (avatarFile) return true; // выбран новый файл
-        if (avatarRemoved && profile.avatarUrl) return true; // аватар явно удалён
+        if (avatarFile) return true;
+        if (avatarRemoved && profile.avatarUrl) return true;
 
         return false;
     }, [name, username, bio, location, website, gender, avatarFile, avatarRemoved, profile]);
@@ -121,20 +146,25 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
                 avatarKey = signed.key;
             }
 
-            const patch: Record<string, unknown> = {};
-
-            setPatch(patch, 'name', name)
-            setPatch(patch, 'username', finalUsername)
-            setPatch(patch, 'bio', bio)
-            setPatch(patch, 'location', location)
-            setPatch(patch, 'website', website)
-
-            if (gender) patch.gender = gender;
+            const patch = buildPatch(profile, {
+                name,
+                username: finalUsername,
+                bio,
+                location,
+                website,
+                gender,
+            });
 
             if (avatarKey) {
                 patch.avatarKey = avatarKey;
             } else if (avatarRemoved && profile.avatarUrl) {
                 patch.avatarKey = null;
+            }
+
+            // если реально нечего отправлять — просто закрываем без похода в API
+            if (Object.keys(patch).length === 0) {
+                onSaved();
+                return;
             }
 
             await apiFetch(`/api/users/${userId}/profile`, {
@@ -238,7 +268,7 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
                         <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
                     </div>
 
-                                  <div className="form-row">
+                    <div className="form-row">
                         <label className="form-label">Username</label>
                         <div className="handle-wrap">
                             <span className="handle-prefix">@</span>
