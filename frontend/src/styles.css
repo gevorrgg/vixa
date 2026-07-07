@@ -678,7 +678,7 @@ a:hover { text-decoration: underline; }
 }
 .ep-avatar-preview {
   position: relative;
-  width: 88px; height: 88px;
+  width: 100px; height: 88px;
   border-radius: 50%;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
