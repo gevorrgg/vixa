@@ -678,7 +678,7 @@ a:hover { text-decoration: underline; }
 }
 .ep-avatar-preview {
   position: relative;
-  width: 100px; height: 88px;
+  width: 88px; height: 88px;
   border-radius: 50%;
   overflow: hidden;
   display: flex; align-items: center; justify-content: center;
@@ -700,8 +700,20 @@ a:hover { text-decoration: underline; }
   cursor: pointer;
   font-size: 0.7rem;
   display: none;
+
+  /* сброс браузерных дефолтов button */
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  line-height: 1;
+  font-family: inherit;
+  outline: none;
+
+  /* центрируем "✕" внутри круга */
+  align-items: center;
+  justify-content: center;
 }
-.avatar-remove-btn.visible { display: block; }
+.avatar-remove-btn.visible { display: flex; }
 .ep-avatar-right { flex: 1; }
 
 .avatar-upload-zone {
