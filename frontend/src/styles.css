@@ -713,7 +713,7 @@ a:hover { text-decoration: underline; }
   align-items: center;
   justify-content: center;
 }
-.avatar-remove-btn.visible { display: flex; }
+.avatar-remove-btn.visible { display: block; }
 .ep-avatar-right { flex: 1; }
 
 .avatar-upload-zone {
