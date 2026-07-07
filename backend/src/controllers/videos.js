@@ -34,8 +34,8 @@ class VideoController {
 
             if (thumbnailType === null) {
                 return res.json({
-                    ok: true,
-                    content: content
+                    content: content,
+                    thumbnail: null
                 })
             }
 
@@ -45,7 +45,6 @@ class VideoController {
             )
 
             return res.json({
-                ok: true,
                 content: content,
                 thumbnail: thumbnail
             })
