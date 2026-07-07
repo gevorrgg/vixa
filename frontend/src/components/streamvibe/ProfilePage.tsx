@@ -186,8 +186,6 @@ export function ProfilePage() {
         });
     }
 
-    console.log(userId)
-
     /* ── render ───────────────────────────────────────────────────────── */
     if (!userId || !profile) {
         return (
