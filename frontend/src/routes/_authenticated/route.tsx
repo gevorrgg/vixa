@@ -15,8 +15,6 @@ export const Route = createFileRoute("/_authenticated")({
     beforeLoad: async () => {
         const user = await getMe();
 
-        console.log(user)
-
         if (!user) {
             throw redirect({ to: "/auth" });
         }
