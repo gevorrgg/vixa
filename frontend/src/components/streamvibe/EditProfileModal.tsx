@@ -238,14 +238,17 @@ export function EditProfileModal({ userId, profile, avatarGrad, onClose, onSaved
                         <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
                     </div>
 
-                    <div className="form-row">
+                                  <div className="form-row">
                         <label className="form-label">Username</label>
                         <div className="handle-wrap">
                             <span className="handle-prefix">@</span>
                             <input
                                 className="form-input handle-input"
                                 value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                onChange={(e) => {
+                                    setUsername(e.target.value);
+                                    if (handleError) setHandleError(null);
+                                }}
                                 maxLength={30}
                                 style={handleError ? { borderColor: "var(--accent2)" } : undefined}
                             />
