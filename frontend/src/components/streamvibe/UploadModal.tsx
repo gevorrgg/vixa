@@ -86,6 +86,8 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
                 },
             );
 
+             console.log(presign)
+
             const vRes = await fetch(presign.content.uploadUrl, { method: "PUT", body: videoFile });
             if (!vRes.ok) throw new Error("Failed to upload video");
 
@@ -95,8 +97,6 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
                 if (!tRes.ok) throw new Error("Failed to upload thumbnail");
                 thumbnailKey = presign.thumbnail.key;
             }
-
-            console.log(presign)
 
 
             await apiFetch(`/api/users/${userId}/videos`, {
