@@ -3,7 +3,7 @@ import { apiFetch } from "../../lib/api-client";
 import type { ApiProfile } from "./ProfilePage";
 
 type Props = {
-    userId: string;
+    userId: number;
     profile: ApiProfile;
     avatarGrad: string;
     onClose: () => void;
@@ -18,8 +18,6 @@ const GENDERS = [
     { v: "prefer-not", label: "Prefer not to say" },
 ];
 
-// Строит patch только из полей, которые реально отличаются от исходного profile.
-// Если поле было непустым, а стало пустым — это тоже считается изменением (очистка).
 function buildPatch(
     profile: ApiProfile,
     current: { name: string; username: string; bio: string; location: string; website: string; gender: string },

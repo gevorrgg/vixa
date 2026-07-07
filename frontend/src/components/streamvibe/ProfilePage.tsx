@@ -5,8 +5,6 @@ import { UploadModal } from "./UploadModal";
 import { EditProfileModal } from "./EditProfileModal";
 import { Toast, useToast } from "./Toast";
 
-console.log('ProfilePage1')
-
 /* ── constants ports of the original script ─────────────────────────── */
 const GRADIENTS = [
     "linear-gradient(135deg,#a259ff,#ff5c87)",
@@ -43,20 +41,19 @@ const TRENDING = [
 
 /* ── types ──────────────────────────────────────────────────────────── */
 export type ApiVideo = {
-    id: string;
+    id: number;
     title: string;
     category: string;
     views: string;
     date: string;
     duration: string;
-    dur: string;
     emoji: string;
     grad: number;
     thumbnailUrl: string | null;
 };
 
 export type ApiProfile = {
-    id: string;
+    id: number;
     username: string;
     name: string | null;
     bio: string | null;
@@ -77,8 +74,8 @@ function hash(str: string): number {
     }
     return h >>> 0;
 }
-function gradFromId(id: string): string {
-    return `hsl(${hash(id) % 360}, 70%, 60%)`;
+function gradFromId(id: number): string {
+    return `hsl(${hash(`${id}`) % 360}, 70%, 60%)`;
 }
 function initialsOf(name: string): string {
     return (
@@ -117,13 +114,9 @@ export function ProfilePage() {
     useEffect(() => {
         const session = getStoredAuthSession();
 
-        console.log(session)
 
         const storedUserId =
-            typeof session?.user?.id === "number" ? session.user.id : null;
-        
-        console.log(storedUserId)
-        
+            typeof session?.user?.id === "number" ? session.user.id : null
         
         if (storedUserId) {
             setUserId(storedUserId);
@@ -137,7 +130,7 @@ export function ProfilePage() {
         }
     }, []);
 
-    const refreshAll = useCallback(async (uid: string) => {
+    const refreshAll = useCallback(async (uid: number) => {
         const [p, s, v] = await Promise.all([
             apiFetch<ApiProfile>(`/api/users/${uid}/profile`),
             apiFetch<ApiStats>(`/api/users/${uid}/stats`),
@@ -395,7 +388,7 @@ function VideoGrid({
     onDelete,
 }: {
     videos: ApiVideo[];
-    onDelete: (id: string) => void;
+    onDelete: (id: number) => void;
 }) {
     if (videos.length === 0) {
         return (
