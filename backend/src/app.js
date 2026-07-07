@@ -17,7 +17,7 @@ app.use(express.static(path.join(__dirname, "dist")));
 app.use('/api/auth', authRouter)
 app.use('/api/users', userApiRouter)
 app.use('/api/users', profileRouter)
-app.use('/api/videos', videoRouter)
+app.use('/api/users', videoRouter)
 
 // ===== health check =====
 app.get('/api/health', (req, res) => {
