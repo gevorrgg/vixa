@@ -212,13 +212,17 @@ export function ProfilePage() {
                 <div className="topbar-actions">
                     {authSession ? (
                         <>
-                            <div className="top-avatar">
+                            <button
+                                className="top-avatar"
+                                onClick={() => navigate({ to: "/" })}
+                                title="My profile"
+                            >
                                 {profile?.avatarUrl ? (
                                     <img src={profile.avatarUrl} alt="" />
                                 ) : (
                                     initialsOf(displayName)
                                 )}
-                            </div>
+                            </button>
 
                             <button
                                 className="btn-icon signout-icon"
