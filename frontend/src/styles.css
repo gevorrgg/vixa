@@ -804,3 +804,62 @@ a:hover { text-decoration: underline; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.16); }
+
+.video-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.video-menu-wrap {
+    position: relative;
+}
+
+.video-menu-trigger {
+    background: none;
+    border: none;
+    color: var(--text-secondary, #9a9aa8);
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.video-menu-trigger:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+
+.video-menu-dropdown {
+    position: absolute;
+    right: 0;
+    bottom: 100%;
+    margin-bottom: 6px;
+    background: #1c1c24;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 4px;
+    min-width: 140px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    z-index: 10;
+}
+
+.video-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #e5e5ea;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.video-menu-item:hover {
+    background: rgba(255,255,255,0.08);
+}
+.video-menu-item.delete {
+    color: #ff5c87;
+}
