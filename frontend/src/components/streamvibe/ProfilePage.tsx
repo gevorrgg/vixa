@@ -52,7 +52,8 @@ export type ApiVideo = {
     emoji: string;
     grad: number;
     thumbnailUrl: string | null;
-    contentUrl: string
+    contentUrl: string;
+    likes: number
 };
 
 export type ApiProfile = {
@@ -192,6 +193,40 @@ export function ProfilePage() {
         });
     }
 
+    const handleDeleteVideo = async (videoId: number) => {
+        if (!userId) {
+            return;
+        }
+
+        try {
+            await apiFetch(
+                `/api/users/${userId}/videos/${videoId}`,
+                {
+                    method: "DELETE",
+                }
+            );
+
+            const deletedVideo = videos.find(v => v.id === videoId);
+
+            setVideos(prev =>
+                prev.filter(v => v.id !== videoId)
+            );
+
+            setStats(prev => ({
+                ...prev,
+                videosCount: Math.max(0, prev.videosCount - 1),
+                totalViews: deletedVideo
+                    ? Math.max(0, prev.totalViews - Number(deletedVideo.views))
+                    : prev.totalViews
+            }));
+
+            showToast("Video deleted successfully");
+        } catch (error) {
+            showToast("Failed to delete video");
+            console.error(error);
+        }
+    };
+
     /* ── render ───────────────────────────────────────────────────────── */
     // if (!userId || !profile) {
     //     return (
@@ -323,7 +358,7 @@ export function ProfilePage() {
 
                 <VideoGrid
                     videos={filtered}
-                    onDelete={(id) => setVideos((v) => v.filter((x) => x.id !== id))}
+                    onDelete={handleDeleteVideo}
                     onOpenVideo={(video) => setSelectedVideo(video)}
                 />
             </main>
