@@ -426,9 +426,12 @@ function VideoGrid({
                     <div
                         className="video-card"
                         key={v.id}
-                        onClick={() => onOpenVideo(v)}
                     >
-                        <div className="video-thumb" style={thumbStyle}>
+                        <div
+                            className="video-thumb"
+                            style={thumbStyle}
+                            onClick={() => onOpenVideo(v)}
+                        >
                             {!v.thumbnailUrl && <span className="video-emoji">{v.emoji}</span>}
                             <span className="play-btn">▶</span>
                             <span className="video-duration">{v.duration}</span>
