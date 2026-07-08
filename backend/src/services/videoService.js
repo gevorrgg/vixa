@@ -108,6 +108,16 @@ class VideoService {
 
         return {ok: true}
     }
+
+    static async likeStatus(videoId, userId) { 
+        const likeStatus = await VideoDao.isVideoLikedByUser(videoId, userId)
+
+        if (!likeStatus) {
+            return {ok: false, status: 404, message: "Could not find user or video"}
+        }
+
+        return {ok: true, isLiked = likeStatus}
+    }
 }
 
 

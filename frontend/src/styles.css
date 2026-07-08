@@ -979,3 +979,37 @@ a:hover { text-decoration: underline; }
     color: #9a9aa8;
     font-size: 13px;
 }
+
+.video-player-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.video-like-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #e5e5ea;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s;
+}
+.video-like-btn:hover {
+    background: rgba(255,255,255,0.12);
+}
+.video-like-btn.liked {
+    background: rgba(255, 92, 135, 0.15);
+    border-color: rgba(255, 92, 135, 0.4);
+    color: #ff5c87;
+}
+
+.video-like-icon {
+    font-size: 14px;
+}

@@ -10,7 +10,9 @@ router.post(
     authMiddleware,
     VideoController.getVideoUploadUrl
 )
+router.get('/:userId/videos/:videoId/like-status')
 router.post('/:userId/videos', authMiddleware, VideoController.createVideo)
 router.delete('/:userId/videos/:videoId', authMiddleware, VideoController.deleteVideo)
+
 
 module.exports = router

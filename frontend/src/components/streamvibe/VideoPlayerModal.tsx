@@ -1,16 +1,36 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ApiVideo } from "./ProfilePage";
+import { apiFetch } from "../../lib/api-client";
 
 export function VideoPlayerModal({
     video,
+    userId,
     onClose,
 }: {
     video: ApiVideo;
+    userId: number | null;
     onClose: () => void;
 }) {
     const videoRef = useRef<HTMLVideoElement | null>(null);
+    const [liked, setLiked] = useState(false);
+    const [likesCount, setLikesCount] = useState(video.likes ?? 0);
 
-    // закрытие по Escape
+    useEffect(() => {
+        async function checkLikeStatus() {
+            try {
+                const result = await apiFetch<{ liked: boolean }>(
+                    `/api/users/${userId}/videos/${video.id}/like-status`
+                );
+
+                setLiked(result.liked);
+            } catch (err) {
+                console.error("Failed to check like status", err);
+            }
+        }
+
+        checkLikeStatus();
+    }, [video.id]);
+
     useEffect(() => {
         function handleEscape(e: KeyboardEvent) {
             if (e.key === "Escape") onClose();
@@ -25,6 +45,16 @@ export function VideoPlayerModal({
             // автоплей может быть заблокирован браузером — это нормально
         });
     }, []);
+
+    function toggleLike() {
+        setLiked((prev) => {
+            const next = !prev;
+            setLikesCount((count) => count + (next ? 1 : -1));
+            return next;
+        });
+        // TODO: подключить вызов API, например:
+        // apiFetch(`/api/videos/${video.id}/like`, { method: liked ? "DELETE" : "POST" })
+    }
 
     return (
         <div
@@ -60,7 +90,19 @@ export function VideoPlayerModal({
                 </div>
 
                 <div className="video-player-info">
-                    <h3 className="video-player-title">{video.title}</h3>
+                    <div className="video-player-header-row">
+                        <h3 className="video-player-title">{video.title}</h3>
+                        <button
+                            className={`video-like-btn${liked ? " liked" : ""}`}
+                            onClick={toggleLike}
+                            aria-pressed={liked}
+                            aria-label={liked ? "Unlike" : "Like"}
+                        >
+                            <span className="video-like-icon">{liked ? "❤️" : "🤍"}</span>
+                            {liked ? "Liked" : "Like"}
+                            <span className="video-like-count">{formatLikes(likesCount)}</span>
+                        </button>
+                    </div>
                     <div className="video-player-meta">
                         <span>{video.views}</span>
                         <span>{video.date}</span>
@@ -83,4 +125,11 @@ const GRADIENTS = [
 
 function GRADIENT_FALLBACK(grad: number): string {
     return GRADIENTS[grad % GRADIENTS.length];
+}
+
+function formatLikes(n: number): string {
+    if (n < 0) return "0";
+    if (n < 1000) return String(n);
+    if (n < 1_000_000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+    return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
 }

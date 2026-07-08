@@ -80,7 +80,7 @@ class VideoController {
         if (userId != req.user.id) {
             return res.status(403).json({ok: false, message: 'forbidden'})
         }
-        
+
         if (!userId) {
             return res.status(401).json({ok: false, message: 'Unauthorized'})
         }
@@ -92,6 +92,23 @@ class VideoController {
         }
 
         return res.json({ok: true})
+    }
+
+    static async videoLikeStatus(req, res) {
+        const videoId = req.params.videoId
+        const userId = req.params.user
+
+        if (userId != req.user.id) { 
+            return res.status(403).json({ok: false, message: 'forbidden'})
+        }
+
+        const likeStatus = await VideoService.likeStatus(videoId, userId)
+
+        if (!likeStatus.ok) { 
+            return res.status(likeStatus.status).json({ok: false, message: likeStatus.message})
+        }
+
+        return res.json({ok: true, isLiked = likeStatus.isLiked})
     }
 }
 

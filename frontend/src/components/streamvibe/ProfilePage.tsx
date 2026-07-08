@@ -217,7 +217,7 @@ export function ProfilePage() {
                 videosCount: Math.max(0, prev.videosCount - 1),
                 totalViews: deletedVideo
                     ? Math.max(0, prev.totalViews - Number(deletedVideo.views))
-                    : prev.totalViews
+                    : 0
             }));
 
             showToast("Video deleted successfully");
@@ -455,6 +455,7 @@ export function ProfilePage() {
             {selectedVideo && (
                 <VideoPlayerModal
                     video={selectedVideo}
+                    userId={ userId }
                     onClose={() => setSelectedVideo(null)}
                 />
             )}
