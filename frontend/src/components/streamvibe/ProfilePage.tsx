@@ -478,7 +478,7 @@ function VideoGrid({
                             <h4 className="video-title">{v.title}</h4>
                             <div className="video-meta-row">
                                 <div className="video-meta">
-                                    <span>👁 {v.views}</span>
+                                    <span>{v.views}</span>
                                     <span>{v.date}</span>
                                 </div>
                                 <VideoCardMenu

@@ -62,7 +62,7 @@ export function VideoPlayerModal({
                 <div className="video-player-info">
                     <h3 className="video-player-title">{video.title}</h3>
                     <div className="video-player-meta">
-                        <span>👁 {video.views}</span>
+                        <span>{video.views}</span>
                         <span>{video.date}</span>
                         <span>{video.duration}</span>
                     </div>
