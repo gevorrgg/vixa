@@ -245,12 +245,12 @@ export function ProfilePage() {
                         <div
                             className="avatar"
                             style={
-                                profile.avatarUrl
+                                profile?.avatarUrl
                                     ? { background: "none" }
                                     : { background: avatarGrad }
                             }
                         >
-                            {profile.avatarUrl ? (
+                            {profile?.avatarUrl ? (
                                 <img src={profile.avatarUrl} alt="" />
                             ) : (
                                 initialsOf(displayName)
@@ -259,11 +259,11 @@ export function ProfilePage() {
                         <span className="online-dot" />
                     </div>
                     <div className="profile-name">{displayName}</div>
-                    <div className="profile-handle">@{profile.username} · Creator</div>
-                    {profile.bio && <div className="profile-bio-display">{profile.bio}</div>}
+                    <div className="profile-handle">@{profile?.username} · Creator</div>
+                    {profile?.bio && <div className="profile-bio-display">{profile.bio}</div>}
                     <div className="profile-meta-row">
-                        {profile.location && <span className="meta-item">{profile.location}</span>}
-                        {profile.website && (
+                        {profile?.location && <span className="meta-item">{profile?.location}</span>}
+                        {profile?.website && (
                             <span className="meta-item">
                                 <a href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`} target="_blank" rel="noreferrer">
                                     🔗 {profile.website.replace(/^https?:\/\//, "")}
