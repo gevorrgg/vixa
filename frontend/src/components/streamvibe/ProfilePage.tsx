@@ -50,6 +50,7 @@ export type ApiVideo = {
     emoji: string;
     grad: number;
     thumbnailUrl: string | null;
+    contentUrl: string
 };
 
 export type ApiProfile = {
@@ -334,7 +335,7 @@ export function ProfilePage() {
                                 </div>
                                 <div className="trending-meta">
                                     <div className="trending-title">{t.title}</div>
-                                    <div className="trending-views">👁 {t.views}</div>
+                                    <div className="trending-views">{t.views}</div>
                                 </div>
                             </div>
                         ))}
@@ -498,10 +499,10 @@ function VideoCardMenu({
             {isOpen && (
                 <div className="video-menu-dropdown" role="menu">
                     <button className="video-menu-item" role="menuitem" onClick={onEdit}>
-                        ✏️ Edit
+                        Edit
                     </button>
                     <button className="video-menu-item delete" role="menuitem" onClick={onDelete}>
-                        🗑 Delete
+                        Delete
                     </button>
                 </div>
             )}
