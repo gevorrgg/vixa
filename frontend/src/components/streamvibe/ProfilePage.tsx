@@ -380,6 +380,13 @@ export function ProfilePage() {
                 />
             )}
 
+            {selectedVideo && (
+                <VideoPlayerModal
+                    video={selectedVideo}
+                    onClose={() => setSelectedVideo(null)}
+                />
+            )}
+
             <Toast message={toast} />
         </div>
     );
