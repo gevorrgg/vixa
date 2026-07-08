@@ -10,12 +10,77 @@ type Props = {
 
 type PresignResponse = {
     content: { uploadUrl: string; key: string };
-    thumbnail: { uploadUrl: string; key: string } | null;
+    thumbnail: { uploadUrl: string; key: string };
 };
+
+export function generateThumbnail(
+    file: File,
+    time = 1
+): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+
+        video.preload = "metadata";
+        video.muted = true;
+        video.playsInline = true;
+
+        const url = URL.createObjectURL(file);
+        video.src = url;
+
+        video.onloadedmetadata = () => {
+            // если видео короче секунды — берём первый кадр
+            video.currentTime = Math.min(time, video.duration);
+        };
+
+        video.onseeked = () => {
+            const canvas = document.createElement("canvas");
+
+            const maxWidth = 640;
+            const scale = maxWidth / video.videoWidth;
+
+            canvas.width = maxWidth;
+            canvas.height = video.videoHeight * scale;
+
+            const ctx = canvas.getContext("2d");
+
+            if (!ctx) {
+                reject(new Error("Canvas unavailable"));
+                return;
+            }
+
+            ctx.drawImage(
+                video,
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            canvas.toBlob(
+                (blob) => {
+                    URL.revokeObjectURL(url);
+
+                    if (!blob) {
+                        reject(new Error("Thumbnail generation failed"));
+                        return;
+                    }
+
+                    resolve(blob);
+                },
+                "image/jpeg",
+                0.85
+            );
+        };
+
+        video.onerror = () => {
+            reject(new Error("Video loading failed"));
+        };
+    });
+}
 
 export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
     const [videoFile, setVideoFile] = useState<File | null>(null);
-    const [thumbFile, setThumbFile] = useState<File | null>(null);
+    let [thumbFile, setThumbFile] = useState<File | null>(null);
     const [thumbPreview, setThumbPreview] = useState<string | null>(null);
     const [title, setTitle] = useState("");
     const [desc, setDesc] = useState("");
@@ -54,10 +119,7 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
             onError("⚠️ Please select a valid image file");
             return;
         }
-        if (f.size / 1024 / 1024 > 5) {
-            onError("⚠️ Thumbnail must be under 5MB");
-            return;
-        }
+
         setThumbFile(f);
         const r = new FileReader();
         r.onload = (e) => setThumbPreview(String(e.target?.result ?? ""));
@@ -81,7 +143,7 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
                     method: "POST",
                     body: JSON.stringify({
                         contentType: videoFile.type,
-                        thumbnailType: thumbFile?.type ?? null,
+                        thumbnailType: thumbFile?.type ?? 'image/jpeg',
                     }),
                 },
             );
@@ -90,11 +152,22 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
             if (!vRes.ok) throw new Error("Failed to upload video");
 
             let thumbnailKey: string | null = null;
-            if (thumbFile && presign.thumbnail) {
-                const tRes = await fetch(presign.thumbnail.uploadUrl, { method: "PUT", body: thumbFile });
-                if (!tRes.ok) throw new Error("Failed to upload thumbnail");
-                thumbnailKey = presign.thumbnail.key;
+            if (!thumbFile) {
+                const thumbnailBlob = await generateThumbnail(videoFile)
+
+                thumbFile = new File(
+                    [thumbnailBlob],
+                    "thumbnail.jpg",
+                    {
+                        type: "image/jpeg"
+                    }
+                )
             }
+
+            const tRes = await fetch(presign.thumbnail.uploadUrl, { method: "PUT", body: thumbFile });
+            if (!tRes.ok) throw new Error("Failed to upload thumbnail");
+            thumbnailKey = presign.thumbnail.key;
+
 
 
             await apiFetch(`/api/users/${userId}/videos`, {
