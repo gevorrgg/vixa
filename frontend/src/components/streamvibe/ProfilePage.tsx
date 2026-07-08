@@ -5,6 +5,7 @@ import { UploadModal } from "./UploadModal";
 import { EditProfileModal } from "./EditProfileModal";
 import { Toast, useToast } from "./Toast";
 import { VideoPlayerModal } from "./VideoPlayerModal";
+import { LogOut, LogIn } from "lucide-react";
 
 /* ── constants ports of the original script ─────────────────────────── */
 const GRADIENTS = [
@@ -224,7 +225,7 @@ export function ProfilePage() {
                                 onClick={handleSignOut}
                                 title="Sign out"
                             >
-                                🚪
+                                <LogOut size={20} />
                             </button>
                         </>
                     ) : (
@@ -232,6 +233,7 @@ export function ProfilePage() {
                             className="btn-signin"
                             onClick={() => navigate({ to: "/auth" })}
                         >
+                            <LogIn size={18} />
                             Sign in
                         </button>
                     )}
