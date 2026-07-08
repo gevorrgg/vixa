@@ -101,7 +101,7 @@ function humanReadable(n: number): string {
 export function ProfilePage() {
     const navigate = useNavigate();
     const { toast, showToast } = useToast();
-
+    const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
     const [userId, setUserId] = useState<number | null>(null);
     const [profile, setProfile] = useState<ApiProfile | null>(null);
     const [stats, setStats] = useState<ApiStats>({ videosCount: 0, followersCount: 0, totalViews: 0 });
@@ -178,6 +178,7 @@ export function ProfilePage() {
     /* ── handlers ─────────────────────────────────────────────────────── */
     function handleSignOut() {
         clearAuthSession();
+        setAuthSession(null);
         navigate({ to: "/auth", replace: true });
     }
 
@@ -191,20 +192,50 @@ export function ProfilePage() {
     }
 
     /* ── render ───────────────────────────────────────────────────────── */
-    if (!userId || !profile) {
-        return (
-            <div className="loading-screen">
-                <div className="logo">Stream<span>Vibe</span></div>
-            </div>
-        );
-    }
+    // if (!userId || !profile) {
+    //     return (
+    //         <div className="loading-screen">
+    //             <div className="logo">Stream<span>Vibe</span></div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="app-shell">
             {/* TOP BAR */}
             <header id="topbar">
-                <div className="logo">Stream<span>Vibe</span></div>
-                <button className="btn-signout" onClick={handleSignOut}>Sign out</button>
+                <div className="logo">
+                    Stream<span>Vibe</span>
+                </div>
+
+                <div className="topbar-actions">
+                    {authSession ? (
+                        <>
+                            <div className="top-avatar">
+                                {profile?.avatarUrl ? (
+                                    <img src={profile.avatarUrl} alt="" />
+                                ) : (
+                                    initialsOf(displayName)
+                                )}
+                            </div>
+
+                            <button
+                                className="btn-icon signout-icon"
+                                onClick={handleSignOut}
+                                title="Sign out"
+                            >
+                                🚪
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            className="btn-signin"
+                            onClick={() => navigate({ to: "/auth" })}
+                        >
+                            Sign in
+                        </button>
+                    )}
+                </div>
             </header>
 
             {/* SIDEBAR */}

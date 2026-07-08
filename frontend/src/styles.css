@@ -775,6 +775,45 @@ a:hover { text-decoration: underline; }
   border-color: transparent;
 }
 
+/* --- topbar -------------------------------------------------------- */
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.top-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #a259ff;
+    font-weight: 700;
+}
+
+.top-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.signout-icon {
+    font-size: 20px;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+}
+
+.btn-signin {
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+
 /* ─── toast ───────────────────────────────────────────────────────── */
 .toast {
   position: fixed;
