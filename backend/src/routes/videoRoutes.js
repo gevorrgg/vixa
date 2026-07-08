@@ -1,6 +1,6 @@
 const express = require('express')
 const VideoController = require('../controllers/videos')
-const authMiddlewear = require('../middleware/middleware')
+const { authMiddlewear } = require('../middleware/middleware')
 
 const router = express.Router()
 
