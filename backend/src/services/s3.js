@@ -17,5 +17,5 @@ async function deleteObjectFromS3Bucket(key) {
 
 module.exports = {
     s3,
-    deleteObject
+    deleteObjectFromS3Bucket
 };
