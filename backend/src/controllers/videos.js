@@ -72,6 +72,27 @@ class VideoController {
 
         return res.json({ ok: true })
     }
+
+    static async deleteVideo(req, res) { 
+        const videoId = req.params.videoId
+        const userId = req.params.userId 
+
+        if (userId != req.user.id) {
+            return res.status(403).json({ok: false, message: 'forbidden'})
+        }
+        
+        if (!userId) {
+            return res.status(401).json({ok: false, message: 'Unauthorized'})
+        }
+
+        const deleteResult = await VideoService.deleteVideo(videoId, userId)
+
+        if (!deleteResult.ok) {
+            return res.status(400).json({ok: false, message: 'Could not delete video'})
+        }
+
+        return res.json({ok: true})
+    }
 }
 
 module.exports = VideoController

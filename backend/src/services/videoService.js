@@ -1,6 +1,6 @@
 const VideoDao = require('../dao/videoDao')
 const { v4 } = require('uuid')
-const { s3 } = require('./s3')
+const { s3, deleteObjectFromS3Bucket } = require('./s3')
 const { PutObjectCommand } = require('@aws-sdk/client-s3')
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
 
@@ -93,6 +93,22 @@ class VideoService {
 
         return { uploadUrl, key }
     }
+
+    static async deleteVideo(videoId, userId) {
+       const deletedVideo = await VideoDao.deleteVideoById(videoId, userId)
+        
+        if (!deletedVideo) { 
+            return {ok: false}
+        }
+
+        const { contentKey, thumbnailKey } = deletedVideo
+
+        deleteObjectFromS3Bucket(contentKey)
+        deleteObjectFromS3Bucket(thumbnailKey)
+
+        return {ok: true}
+    }
 }
+
 
 module.exports = VideoService

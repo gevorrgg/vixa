@@ -1,6 +1,6 @@
 const ProfileService = require('../services/profileService');
 const { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } = require('@aws-sdk/client-sqs');
-const { s3, deleteObject } = require('../services/s3');
+const { s3, deleteObjectFromS3Bucket } = require('../services/s3');
 
 const sqs = new SQSClient({ region: process.env.AWS_REGION });
 
@@ -32,7 +32,7 @@ async function handleMessage(message) {
 
         if (oldKey) {
             // Delete the old avatar from S3
-            await deleteObject(oldKey);
+            await deleteObjectFromS3Bucket(oldKey);
         }
 
     } catch (error) {

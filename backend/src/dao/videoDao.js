@@ -32,6 +32,26 @@ class VideoDao {
 
         return Number(result.rows[0].count)
     }
+    
+    static async deleteVideoById(videoId, userId) { 
+        const sql = `
+        DELETE FROM videos
+        WHERE id = $1 AND user_id = $2
+        RETURNING id, content_key, thumbnail_key
+        `
+        const result = await db.query(sql, [videoId, userId])
+        const deletedVideo = result.rows[0]
+
+        if (!deletedVideo) {
+            return null
+        }
+
+        return {
+            contentKey: deletedVideo.content_key,
+            thumbnailKey: deletedVideo.thumbnail_key
+        }
+        
+    }
 }
 
 module.exports = VideoDao

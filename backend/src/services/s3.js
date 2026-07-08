@@ -6,7 +6,7 @@ const s3 = new S3Client({
     responseChecksumValidation: "WHEN_REQUIRED"
 });
 
-async function deleteObject(key) {
+async function deleteObjectFromS3Bucket(key) {
     return s3.send(
         new DeleteObjectCommand({
             Bucket: process.env.S3_BUCKET,
