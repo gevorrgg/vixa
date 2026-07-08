@@ -227,7 +227,7 @@ export function ProfilePage() {
                     <div className="profile-handle">@{profile.username} · Creator</div>
                     {profile.bio && <div className="profile-bio-display">{profile.bio}</div>}
                     <div className="profile-meta-row">
-                        {profile.location && <span className="meta-item">📍 {profile.location}</span>}
+                        {profile.location && <span className="meta-item">{profile.location}</span>}
                         {profile.website && (
                             <span className="meta-item">
                                 <a href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`} target="_blank" rel="noreferrer">
@@ -241,7 +241,7 @@ export function ProfilePage() {
                         <div className="stat"><div className="stat-num">{humanReadable(stats.followersCount)}</div><div className="stat-label">Followers</div></div>
                         <div className="stat"><div className="stat-num">{humanReadable(stats.totalViews)}</div><div className="stat-label">Views</div></div>
                     </div>
-                    <button className="btn-edit" onClick={() => setEditOpen(true)}>✏️ Edit Profile</button>
+                    <button className="btn-edit" onClick={() => setEditOpen(true)}>Edit Profile</button>
                 </div>
                 <nav className="nav-section">
                     <div className="nav-label">Menu</div>
@@ -388,6 +388,9 @@ function VideoGrid({
     videos: ApiVideo[];
     onDelete: (id: number) => void;
 }) {
+    // id открытого меню (только одно меню может быть открыто одновременно)
+    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+
     if (videos.length === 0) {
         return (
             <div className="empty-state">
@@ -415,19 +418,93 @@ function VideoGrid({
                         <div className="video-info">
                             <div className={`video-tag ${tag.cls}`}>{tag.label}</div>
                             <h4 className="video-title">{v.title}</h4>
-                            <div className="video-meta">
-                                <span>👁 {v.views}</span>
-                                <span>{v.date}</span>
-                            </div>
-                            <div className="video-actions">
-                                <button className="btn-sm">✏️ Edit</button>
-                                <button className="btn-sm">📊 Stats</button>
-                                <button className="btn-sm delete-btn" onClick={() => onDelete(v.id)}>🗑</button>
+                            <div className="video-meta-row">
+                                <div className="video-meta">
+                                    <span>👁 {v.views}</span>
+                                    <span>{v.date}</span>
+                                </div>
+                                <VideoCardMenu
+                                    isOpen={openMenuId === v.id}
+                                    onToggle={() => setOpenMenuId((cur) => (cur === v.id ? null : v.id))}
+                                    onClose={() => setOpenMenuId(null)}
+                                    onEdit={() => {
+                                        setOpenMenuId(null);
+                                        // TODO: подключить редактирование видео
+                                    }}
+                                    onDelete={() => {
+                                        setOpenMenuId(null);
+                                        onDelete(v.id);
+                                    }}
+                                />
                             </div>
                         </div>
                     </div>
                 );
             })}
+        </div>
+    );
+}
+
+/* ── меню действий (Edit / Delete) для карточки видео ────────────────── */
+function VideoCardMenu({
+    isOpen,
+    onToggle,
+    onClose,
+    onEdit,
+    onDelete,
+}: {
+    isOpen: boolean;
+    onToggle: () => void;
+    onClose: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
+}) {
+    const wrapRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        function handleClickOutside(e: MouseEvent) {
+            if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+                onClose();
+            }
+        }
+        function handleEscape(e: KeyboardEvent) {
+            if (e.key === "Escape") onClose();
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, [isOpen, onClose]);
+
+    return (
+        <div className="video-menu-wrap" ref={wrapRef}>
+            <button
+                className="btn-icon video-menu-trigger"
+                aria-label="More options"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onToggle();
+                }}
+            >
+                ⋮
+            </button>
+            {isOpen && (
+                <div className="video-menu-dropdown" role="menu">
+                    <button className="video-menu-item" role="menuitem" onClick={onEdit}>
+                        ✏️ Edit
+                    </button>
+                    <button className="video-menu-item delete" role="menuitem" onClick={onDelete}>
+                        🗑 Delete
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

@@ -80,12 +80,8 @@ export async function apiFetch<T = unknown>(
 
     const res = await fetch(resolveApiUrl(path), { ...init, headers });
 
-    console.log("status:", res.status);
-
     const text = await res.text();
 
-    console.log("text:", text);
-    console.log(res)
     const body = text ? safeJson(text) : null;
     if (!res.ok) {
         let message = `Request failed (${res.status})`;
