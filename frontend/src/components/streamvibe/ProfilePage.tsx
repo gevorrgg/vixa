@@ -4,6 +4,7 @@ import { apiFetch, clearAuthSession, getStoredAuthSession, getStoredAuthUser } f
 import { UploadModal } from "./UploadModal";
 import { EditProfileModal } from "./EditProfileModal";
 import { Toast, useToast } from "./Toast";
+import { VideoPlayerModal } from "./VideoPlayerModal";
 
 /* ── constants ports of the original script ─────────────────────────── */
 const GRADIENTS = [
@@ -105,11 +106,13 @@ export function ProfilePage() {
     const [profile, setProfile] = useState<ApiProfile | null>(null);
     const [stats, setStats] = useState<ApiStats>({ videosCount: 0, followersCount: 0, totalViews: 0 });
     const [videos, setVideos] = useState<ApiVideo[]>([]);
+    const [selectedVideo, setSelectedVideo] = useState<ApiVideo | null>(null);
     const [activeFilter, setActiveFilter] = useState("all");
     const [uploadOpen, setUploadOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [userSearch, setUserSearch] = useState("");
     const [userList, setUserList] = useState(USERS);
+
 
     /* ── load auth + data ─────────────────────────────────────────────── */
     useEffect(() => {
@@ -118,7 +121,7 @@ export function ProfilePage() {
 
         const storedUserId =
             typeof session?.user?.id === "number" ? session.user.id : null
-        
+
         if (storedUserId) {
             setUserId(storedUserId);
             return;
@@ -284,6 +287,7 @@ export function ProfilePage() {
                 <VideoGrid
                     videos={filtered}
                     onDelete={(id) => setVideos((v) => v.filter((x) => x.id !== id))}
+                    onOpenVideo={(video) => setSelectedVideo(video)}
                 />
             </main>
 
@@ -385,9 +389,11 @@ export function ProfilePage() {
 function VideoGrid({
     videos,
     onDelete,
+    onOpenVideo,
 }: {
     videos: ApiVideo[];
     onDelete: (id: number) => void;
+    onOpenVideo: (video: ApiVideo) => void;
 }) {
     // id открытого меню (только одно меню может быть открыто одновременно)
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -410,7 +416,11 @@ function VideoGrid({
                     ? { backgroundImage: `url('${v.thumbnailUrl}')`, backgroundSize: "cover", backgroundPosition: "center" }
                     : { background: GRADIENTS[v.grad % GRADIENTS.length] };
                 return (
-                    <div className="video-card" key={v.id}>
+                    <div
+                        className="video-card"
+                        key={v.id}
+                        onClick={() => onOpenVideo(v)}
+                    >
                         <div className="video-thumb" style={thumbStyle}>
                             {!v.thumbnailUrl && <span className="video-emoji">{v.emoji}</span>}
                             <span className="play-btn">▶</span>
