@@ -14,6 +14,7 @@ export function VideoPlayerModal({
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const [liked, setLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(video.likes ?? 0);
+    const [likePending, setLikePending] = useState(false);
 
     useEffect(() => {
         async function checkLikeStatus() {
@@ -47,18 +48,28 @@ export function VideoPlayerModal({
     }, []);
 
     async function toggleLike() {
+        // защита от повторных кликов, пока предыдущий запрос ещё не завершился —
+        // иначе уходит несколько POST/DELETE подряд и счётчик лайков "скачет"
+        if (likePending) return;
+
         const nextLiked = !liked;
+
+        // оптимистичное обновление UI, с откатом при ошибке
+        setLiked(nextLiked);
+        setLikesCount((count) => count + (nextLiked ? 1 : -1));
+        setLikePending(true);
 
         try {
             await apiFetch(`/api/users/${userId}/videos/${video.id}/like`, {
                 method: nextLiked ? "POST" : "DELETE",
             });
-
-            setLiked(nextLiked);
-            setLikesCount((count) => count + (nextLiked ? 1 : -1));
-
         } catch (err) {
             console.error("Failed to toggle like", err);
+            // откатываем состояние назад, раз запрос не прошёл
+            setLiked(!nextLiked);
+            setLikesCount((count) => count - (nextLiked ? 1 : -1));
+        } finally {
+            setLikePending(false);
         }
     }
 
@@ -101,6 +112,7 @@ export function VideoPlayerModal({
                         <button
                             className={`video-like-btn${liked ? " liked" : ""}`}
                             onClick={toggleLike}
+                            disabled={likePending}
                             aria-pressed={liked}
                             aria-label={liked ? "Unlike" : "Like"}
                         >
