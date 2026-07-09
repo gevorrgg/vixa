@@ -1,404 +1,92 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { apiFetch, clearAuthSession, getStoredAuthSession, getStoredAuthUser } from "../../lib/api-client";
+import { clearAuthSession, getStoredAuthSession } from "../../lib/api-client";
 import { UploadModal } from "./UploadModal";
 import { EditProfileModal } from "./EditProfileModal";
 import { Toast, useToast } from "./Toast";
 import { VideoPlayerModal } from "./VideoPlayerModal";
-import { LogOut, LogIn } from "lucide-react";
 
-/* ── constants ports of the original script ─────────────────────────── */
-const GRADIENTS = [
-    "linear-gradient(135deg,#a259ff,#ff5c87)",
-    "linear-gradient(135deg,#00d4ff,#a259ff)",
-    "linear-gradient(135deg,#ff5c87,#ffa45c)",
-    "linear-gradient(135deg,#2dde98,#00d4ff)",
-    "linear-gradient(135deg,#ffa45c,#ff5c87)",
-    "linear-gradient(135deg,#a259ff,#00d4ff)",
-];
+import { TopBar } from "../ui/topbar";
+import { ProfileSidebar } from "../ui/profile-sidebar";
+import { VideoGrid } from "../ui/videogrid";
+import { CreatorsPanel } from "../ui/creatorspanel";
 
-const TAGS: Record<string, { label: string; cls: string }> = {
-    music: { label: "Music", cls: "tag-cyan" },
-    gaming: { label: "Gaming", cls: "tag-green" },
-    tutorial: { label: "Tutorial", cls: "tag-blue" },
-    vlog: { label: "Vlog", cls: "tag-pink" },
-    other: { label: "Other", cls: "tag-purple" },
-};
+import { useCurrentUserId } from "../../hooks/use-current-userId";
+import { useProfileData } from "../../hooks/use-profile-data";
+import { useCreatorSearch } from "../../hooks/use-creator-search";
 
-const TRENDING = [
-    { title: "AI Generated Art – Prompt Engineering Secrets", views: "1.2M", emoji: "🎨", grad: 4 },
-    { title: "100 Days of Code – Final Results", views: "892K", emoji: "💻", grad: 0 },
-    { title: "Street Food Tour – Tokyo Night Market", views: "2.1M", emoji: "🍜", grad: 2 },
-    { title: "Minimal Room Makeover on $200 Budget", views: "544K", emoji: "🏡", grad: 3 },
-];
+import { FILTER_CHIPS } from "../streamvibe/profile/constants/profile.constants";
+import { gradFromId } from "../streamvibe/profile/utils/format";
+import type { ApiVideo } from "../streamvibe/profile/types/profile.types";
 
-/* ── types ──────────────────────────────────────────────────────────── */
-export type ApiVideo = {
-    id: number;
-    title: string;
-    category: string;
-    views: string;
-    date: string;
-    duration: string;
-    emoji: string;
-    grad: number;
-    thumbnailUrl: string | null;
-    contentUrl: string;
-    likes: number
-};
-
-export type ApiProfile = {
-    id: number;
-    username: string;
-    name: string | null;
-    bio: string | null;
-    gender: string | null;
-    location: string | null;
-    website: string | null;
-    avatarUrl: string | null;
-};
-
-type ApiStats = { videosCount: number; followersCount: number; totalViews: number };
-
-/* пользователь, приходящий с /search и /recommendations */
-export type ApiUserResult = {
-    id: number;
-    username: string;
-    name: string | null;
-    avatarUrl: string | null;
-    followersCount: number;
-    following: boolean;
-};
-
-/* ── helpers ────────────────────────────────────────────────────────── */
-function hash(str: string): number {
-    let h = 2166136261;
-    for (let i = 0; i < str.length; i++) {
-        h ^= str.charCodeAt(i);
-        h = Math.imul(h, 16777619);
-    }
-    return h >>> 0;
-}
-function gradFromId(id: number): string {
-    return `hsl(${hash(`${id}`) % 360}, 70%, 60%)`;
-}
-function initialsOf(name: string): string {
-    return (
-        name
-            .trim()
-            .split(/\s+/)
-            .map((w) => w[0] ?? "")
-            .slice(0, 2)
-            .join("")
-            .toUpperCase() || "?"
-    );
-}
-function humanReadable(n: number): string {
-    if (n < 1000) return String(n);
-    if (n < 1_000_000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
-    if (n < 1_000_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
-    return (n / 1_000_000_000).toFixed(1).replace(/\.0$/, "") + "B";
-}
-
-/* ── main ───────────────────────────────────────────────────────────── */
 export function ProfilePage() {
     const navigate = useNavigate();
     const { toast, showToast } = useToast();
+
     const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
-    const [userId, setUserId] = useState<number | null>(null);
-    const [profile, setProfile] = useState<ApiProfile | null>(null);
-    const [stats, setStats] = useState<ApiStats>({ videosCount: 0, followersCount: 0, totalViews: 0 });
-    const [videos, setVideos] = useState<ApiVideo[]>([]);
+    const userId = useCurrentUserId();
+
+    const { profile, stats, videos, refreshAll, refreshVideos, deleteVideo } = useProfileData(userId);
+    const { userSearch, setUserSearch, isSearching, searchLoading, displayedUsers, toggleFollow } =
+        useCreatorSearch(userId);
+
     const [selectedVideo, setSelectedVideo] = useState<ApiVideo | null>(null);
     const [activeFilter, setActiveFilter] = useState("all");
     const [uploadOpen, setUploadOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
-    const [userSearch, setUserSearch] = useState("");
-    const [recommendations, setRecommendations] = useState<ApiUserResult[]>([]);
-    const [searchResults, setSearchResults] = useState<ApiUserResult[]>([]);
-    const [searchLoading, setSearchLoading] = useState(false);
 
-
-    /* ── load auth + data ─────────────────────────────────────────────── */
-    useEffect(() => {
-        const session = getStoredAuthSession();
-
-
-        const storedUserId =
-            typeof session?.user?.id === "number" ? session.user.id : null
-
-        if (storedUserId) {
-            setUserId(storedUserId);
-            return;
-        }
-
-        const fallbackUser = getStoredAuthUser();
-        const derivedUserId = typeof fallbackUser?.id === "number" ? fallbackUser.id : null;
-        if (derivedUserId) {
-            setUserId(derivedUserId);
-        }
-    }, []);
-
-    const refreshAll = useCallback(async (uid: number) => {
-        const [p, s, v] = await Promise.all([
-            apiFetch<ApiProfile>(`/api/users/${uid}/profile`),
-            apiFetch<ApiStats>(`/api/users/${uid}/stats`),
-            apiFetch<{ videos: ApiVideo[] }>(`/api/users/${uid}/videos`),
-        ]);
-        setProfile(p);
-        setStats(s);
-        setVideos(v.videos);
-    }, []);
-
-    useEffect(() => {
-        if (userId) void refreshAll(userId);
-    }, [userId, refreshAll]);
-
-    const refreshVideos = useCallback(async () => {
-        if (!userId) return;
-        const [s, v] = await Promise.all([
-            apiFetch<ApiStats>(`/api/users/${userId}/stats`),
-            apiFetch<{ videos: ApiVideo[] }>(`/api/users/${userId}/videos`),
-        ]);
-        setStats(s);
-        setVideos(v.videos);
-    }, [userId]);
-
-    /* ── recommendations (показываются, пока поле поиска пустое) ────────── */
-    useEffect(() => {
-        if (!userId) return;
-
-        let cancelled = false;
-
-        (async () => {
-            try {
-                const res = await apiFetch<{ users: ApiUserResult[] }>(
-                    `/api/users/${userId}/recommendations`
-                );
-                if (!cancelled) setRecommendations(res.users);
-            } catch (err) {
-                console.error("Failed to load recommendations", err);
-            }
-        })();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [userId]);
-
-    useEffect(() => {
-        const query = userSearch.trim();
-
-        if (!query) {
-            setSearchResults([]);
-            setSearchLoading(false);
-            return;
-        }
-
-        setSearchLoading(true);
-        let cancelled = false;
-
-        const timeoutId = setTimeout(async () => {
-            try {
-                const res = await apiFetch<{ users: ApiUserResult[] }>(
-                    `/api/users/search?prefix=${encodeURIComponent(query)}&limit=10`
-                );
-                if (!cancelled) setSearchResults(res.users);
-            } catch (err) {
-                console.error("Failed to search users", err);
-                if (!cancelled) setSearchResults([]);
-            } finally {
-                if (!cancelled) setSearchLoading(false);
-            }
-        }, 300);
-
-        return () => {
-            cancelled = true;
-            clearTimeout(timeoutId);
-        };
-    }, [userSearch]);
-
-    /* ── computed ─────────────────────────────────────────────────────── */
     const filtered = useMemo(
         () => (activeFilter === "all" ? videos : videos.filter((v) => v.category === activeFilter)),
         [videos, activeFilter],
     );
 
-    const isSearching = userSearch.trim().length > 0;
-    const displayedUsers = isSearching ? searchResults : recommendations;
-
     const avatarGrad = useMemo(() => (userId ? gradFromId(userId) : ""), [userId]);
-    const displayName = profile?.name || profile?.username || "";
 
-    /* ── handlers ─────────────────────────────────────────────────────── */
     function handleSignOut() {
         clearAuthSession();
         setAuthSession(null);
         navigate({ to: "/auth", replace: true });
     }
 
-    function toggleFollow(targetId: number) {
-        const updater = (list: ApiUserResult[]) =>
-            list.map((u) => (u.id === targetId ? { ...u, following: !u.following } : u));
-
-        if (isSearching) {
-            setSearchResults(updater);
-        } else {
-            setRecommendations(updater);
-        }
-
-        const source = isSearching ? searchResults : recommendations;
-        const target = source.find((u) => u.id === targetId);
+    function handleToggleFollow(targetId: number) {
+        const target = toggleFollow(targetId);
         if (target) {
             showToast(!target.following ? `Following ${target.name ?? target.username}!` : `Unfollowed ${target.name ?? target.username}`);
         }
-
-        // TODO: подключить реальный эндпоинт follow/unfollow, когда он появится на бэке
     }
 
-    const handleDeleteVideo = async (videoId: number) => {
-        if (!userId) {
-            return;
-        }
-
+    async function handleDeleteVideo(videoId: number) {
         try {
-            await apiFetch(
-                `/api/users/${userId}/videos/${videoId}`,
-                {
-                    method: "DELETE",
-                }
-            );
-
-            const deletedVideo = videos.find(v => v.id === videoId);
-
-            setVideos(prev =>
-                prev.filter(v => v.id !== videoId)
-            );
-
-            setStats(prev => ({
-                ...prev,
-                videosCount: Math.max(0, prev.videosCount - 1),
-                totalViews: deletedVideo
-                    ? Math.max(0, prev.totalViews - Number(deletedVideo.views))
-                    : 0
-            }));
-
+            await deleteVideo(videoId);
             showToast("Video deleted successfully");
         } catch (error) {
             showToast("Failed to delete video");
             console.error(error);
         }
-    };
-
-    /* ── render ───────────────────────────────────────────────────────── */
-    // if (!userId || !profile) {
-    //     return (
-    //         <div className="loading-screen">
-    //             <div className="logo">Stream<span>Vibe</span></div>
-    //         </div>
-    //     );
-    // }
+    }
 
     return (
         <div className="app-shell">
-            {/* TOP BAR */}
-            <header id="topbar">
-                <div className="logo">
-                    Stream<span>Vibe</span>
-                </div>
+            <TopBar
+                isAuthenticated={!!authSession}
+                profile={profile}
+                avatarGrad={avatarGrad}
+                onOpenOwnProfile={() => navigate({ to: `/` })}
+                onSignOut={handleSignOut}
+                onSignIn={() => navigate({ to: "/auth" })}
+            />
 
-                <div className="topbar-actions">
-                    {authSession ? (
-                        <>
-                            <button
-                                className="top-avatar"
-                                onClick={() => navigate({ to: `/users/${profile?.id}`, params: {userId: profile?.id} })}
-                                title="My profile"
-                                style={
-                                    profile?.avatarUrl
-                                        ? { background: "none" }
-                                        : { background: avatarGrad }
-                                }
-                            >
-                                {profile?.avatarUrl ? (
-                                    <img src={profile.avatarUrl} alt="" />
-                                ) : (
-                                    initialsOf(displayName)
-                                )}
-                            </button>
+            <ProfileSidebar
+                profile={profile}
+                stats={stats}
+                avatarGrad={avatarGrad}
+                actionButton={
+                    <button className="btn-edit" onClick={() => setEditOpen(true)}>
+                        Edit Profile
+                    </button>
+                }
+            />
 
-                            <button
-                                className="btn-icon signout-icon"
-                                onClick={handleSignOut}
-                                title="Sign out"
-                            >
-                                <LogOut size={20} />
-                            </button>
-                        </>
-                    ) : (
-                        <button
-                            className="btn-signin"
-                            onClick={() => navigate({ to: "/auth" })}
-                        >
-                            <LogIn size={18} />
-                            Sign in
-                        </button>
-                    )}
-                </div>
-            </header>
-
-            {/* SIDEBAR */}
-            <aside id="sidebar">
-                <div className="profile-card">
-                    <div className="avatar-wrap">
-                        <div
-                            className="avatar"
-                            style={
-                                profile?.avatarUrl
-                                    ? { background: "none" }
-                                    : { background: avatarGrad }
-                            }
-                        >
-                            {profile?.avatarUrl ? (
-                                <img src={profile.avatarUrl} alt="" />
-                            ) : (
-                                initialsOf(displayName)
-                            )}
-                        </div>
-                        <span className="online-dot" />
-                    </div>
-                    <div className="profile-name">{displayName}</div>
-                    <div className="profile-handle">@{profile?.username} · Creator</div>
-                    {profile?.bio && <div className="profile-bio-display">{profile.bio}</div>}
-                    <div className="profile-meta-row">
-                        {profile?.location && <span className="meta-item">{profile?.location}</span>}
-                        {profile?.website && (
-                            <span className="meta-item">
-                                <a href={/^https?:\/\//.test(profile.website) ? profile.website : `https://${profile.website}`} target="_blank" rel="noreferrer">
-                                    🔗 {profile.website.replace(/^https?:\/\//, "")}
-                                </a>
-                            </span>
-                        )}
-                    </div>
-                    <div className="profile-stats">
-                        <div className="stat"><div className="stat-num">{humanReadable(stats.videosCount)}</div><div className="stat-label">Videos</div></div>
-                        <div className="stat"><div className="stat-num">{humanReadable(stats.followersCount)}</div><div className="stat-label">Followers</div></div>
-                        <div className="stat"><div className="stat-num">{humanReadable(stats.totalViews)}</div><div className="stat-label">Views</div></div>
-                    </div>
-                    <button className="btn-edit" onClick={() => setEditOpen(true)}>Edit Profile</button>
-                </div>
-                <nav className="nav-section">
-                    <div className="nav-label">Menu</div>
-                    <div className="nav-item active"><span className="nav-icon">🎬</span> My Videos</div>
-                    <div className="nav-item"><span className="nav-icon">📊</span> Analytics</div>
-                    <div className="nav-item"><span className="nav-icon">💬</span> Comments</div>
-                    <div className="nav-item"><span className="nav-icon">❤️</span> Liked</div>
-                    <div className="nav-item"><span className="nav-icon">🔖</span> Saved</div>
-                    <div className="nav-item"><span className="nav-icon">⚙️</span> Settings</div>
-                </nav>
-            </aside>
-
-            {/* MAIN */}
             <main id="main">
                 <div className="main-header">
                     <div className="main-title">
@@ -407,13 +95,7 @@ export function ProfilePage() {
                 </div>
 
                 <div className="filter-chips">
-                    {[
-                        ["all", "All"],
-                        ["tutorial", "Tutorials"],
-                        ["vlog", "Vlogs"],
-                        ["music", "Music"],
-                        ["gaming", "Gaming"],
-                    ].map(([k, l]) => (
+                    {FILTER_CHIPS.map(([k, l]) => (
                         <div
                             key={k}
                             className={`chip${activeFilter === k ? " active" : ""}`}
@@ -424,76 +106,18 @@ export function ProfilePage() {
                     ))}
                 </div>
 
-                <VideoGrid
-                    videos={filtered}
-                    onDelete={handleDeleteVideo}
-                    onOpenVideo={(video) => setSelectedVideo(video)}
-                />
+                <VideoGrid videos={filtered} onDelete={handleDeleteVideo} onOpenVideo={(video) => setSelectedVideo(video)} />
             </main>
 
-            {/* RIGHT PANEL */}
-            <aside id="right-panel">
-                <div>
-                    <div className="panel-label">Find Creators</div>
-                    <div className="search-wrap">
-                        <span className="search-icon">🔍</span>
-                        <input
-                            className="search-input"
-                            type="text"
-                            placeholder="Search users…"
-                            value={userSearch}
-                            onChange={(e) => setUserSearch(e.target.value)}
-                        />
-                    </div>
-                </div>
-
-                <div className="user-results">
-                    {searchLoading && <p className="empty-muted">Searching…</p>}
-                    {!searchLoading && displayedUsers.length === 0 && (
-                        <p className="empty-muted">
-                            {isSearching ? "No users found" : "No recommendations yet"}
-                        </p>
-                    )}
-                    {!searchLoading && displayedUsers.map((u) => {
-                        const name = u.name || u.username;
-                        return (
-                            <div className="user-row" key={u.id}>
-                                <div className="user-avatar" style={{ background: gradFromId(u.id) }}
-                                onClick={() => navigate({ to: `/users/${u?.id}`, params: {userId: u?.id} })}>
-                                    {u.avatarUrl ? <img src={u.avatarUrl} alt="" /> : initialsOf(name)}
-                                </div>
-                                <div className="user-meta">
-                                    <div className="user-name">{name}</div>
-                                    <div className="user-sub">@{u.username} · {humanReadable(u.followersCount)} subs</div>
-                                </div>
-                                <button
-                                    className={`follow-btn${u.following ? " following" : ""}`}
-                                    onClick={() => toggleFollow(u.id)}
-                                >
-                                    {u.following ? "✓ Following" : "+ Follow"}
-                                </button>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                <div>
-                    <div className="panel-label">Trending Now</div>
-                    <div className="trending-list">
-                        {TRENDING.map((t) => (
-                            <div className="trending-item" key={t.title}>
-                                <div className="trending-thumb" style={{ background: GRADIENTS[t.grad % GRADIENTS.length] }}>
-                                    {t.emoji}
-                                </div>
-                                <div className="trending-meta">
-                                    <div className="trending-title">{t.title}</div>
-                                    <div className="trending-views">{t.views}</div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </aside>
+            <CreatorsPanel
+                userSearch={userSearch}
+                onUserSearchChange={setUserSearch}
+                isSearching={isSearching}
+                searchLoading={searchLoading}
+                displayedUsers={displayedUsers}
+                onToggleFollow={handleToggleFollow}
+                onOpenUser={(id) => navigate({ to: `/users/${id}`, params: { userId: String(id) } })}
+            />
 
             <button id="btn-new" onClick={() => setUploadOpen(true)}>
                 <span className="plus">＋</span> New Video
@@ -529,152 +153,10 @@ export function ProfilePage() {
             )}
 
             {selectedVideo && (
-                <VideoPlayerModal
-                    video={selectedVideo}
-                    userId={userId}
-                    onClose={() => setSelectedVideo(null)}
-                />
+                <VideoPlayerModal video={selectedVideo} userId={userId} onClose={() => setSelectedVideo(null)} />
             )}
 
             <Toast message={toast} />
-        </div>
-    );
-}
-
-/* ── grid ───────────────────────────────────────────────────────────── */
-function VideoGrid({
-    videos,
-    onDelete,
-    onOpenVideo,
-}: {
-    videos: ApiVideo[];
-    onDelete: (id: number) => void;
-    onOpenVideo: (video: ApiVideo) => void;
-}) {
-    // id открытого меню (только одно меню может быть открыто одновременно)
-    const [openMenuId, setOpenMenuId] = useState<number | null>(null);
-
-    if (videos.length === 0) {
-        return (
-            <div className="empty-state">
-                <div className="empty-icon">🎬</div>
-                <h3>No videos here yet</h3>
-                <p>Upload your first video!</p>
-            </div>
-        );
-    }
-
-    return (
-        <div className="video-grid">
-            {videos.map((v) => {
-                const tag = TAGS[v.category] ?? TAGS.other;
-                const thumbStyle = v.thumbnailUrl
-                    ? { backgroundImage: `url('${v.thumbnailUrl}')`, backgroundSize: "cover", backgroundPosition: "center" }
-                    : { background: GRADIENTS[v.grad % GRADIENTS.length] };
-                return (
-                    <div
-                        className="video-card"
-                        key={v.id}
-                    >
-                        <div
-                            className="video-thumb"
-                            style={thumbStyle}
-                            onClick={() => onOpenVideo(v)}
-                        >
-                            {!v.thumbnailUrl && <span className="video-emoji">{v.emoji}</span>}
-                            <span className="play-btn">▶</span>
-                            <span className="video-duration">{v.duration}</span>
-                        </div>
-                        <div className="video-info">
-                            <div className={`video-tag ${tag.cls}`}>{tag.label}</div>
-                            <h4 className="video-title">{v.title}</h4>
-                            <div className="video-meta-row">
-                                <div className="video-meta">
-                                    <span>{v.views}</span>
-                                    <span>{v.date}</span>
-                                </div>
-                                <VideoCardMenu
-                                    isOpen={openMenuId === v.id}
-                                    onToggle={() => setOpenMenuId((cur) => (cur === v.id ? null : v.id))}
-                                    onClose={() => setOpenMenuId(null)}
-                                    onEdit={() => {
-                                        setOpenMenuId(null);
-                                        // TODO: подключить редактирование видео
-                                    }}
-                                    onDelete={() => {
-                                        setOpenMenuId(null);
-                                        onDelete(v.id);
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
-}
-
-/* ── меню действий (Edit / Delete) для карточки видео ────────────────── */
-function VideoCardMenu({
-    isOpen,
-    onToggle,
-    onClose,
-    onEdit,
-    onDelete,
-}: {
-    isOpen: boolean;
-    onToggle: () => void;
-    onClose: () => void;
-    onEdit: () => void;
-    onDelete: () => void;
-}) {
-    const wrapRef = useRef<HTMLDivElement | null>(null);
-
-    useEffect(() => {
-        if (!isOpen) return;
-
-        function handleClickOutside(e: MouseEvent) {
-            if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-                onClose();
-            }
-        }
-        function handleEscape(e: KeyboardEvent) {
-            if (e.key === "Escape") onClose();
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-        document.addEventListener("keydown", handleEscape);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            document.removeEventListener("keydown", handleEscape);
-        };
-    }, [isOpen, onClose]);
-
-    return (
-        <div className="video-menu-wrap" ref={wrapRef}>
-            <button
-                className="btn-icon video-menu-trigger"
-                aria-label="More options"
-                aria-haspopup="menu"
-                aria-expanded={isOpen}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onToggle();
-                }}
-            >
-                ⋮
-            </button>
-            {isOpen && (
-                <div className="video-menu-dropdown" role="menu">
-                    <button className="video-menu-item" role="menuitem" onClick={onEdit}>
-                        Edit
-                    </button>
-                    <button className="video-menu-item delete" role="menuitem" onClick={onDelete}>
-                        Delete
-                    </button>
-                </div>
-            )}
         </div>
     );
 }

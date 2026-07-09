@@ -1,16 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { UserProfilePage } from "../../components/streamvibe/UserProfilePage";
 
 export const Route = createFileRoute("/users/$userId")({
-    component: UserProfilePage,
+    component: RouteComponent,
 });
 
-function UserProfilePage() {
+function RouteComponent() {
     const { userId } = Route.useParams();
-
-    return (
-        <div>
-            <h1>User profile</h1>
-            <p>User ID: {userId}</p>
-        </div>
-    );
+    return <UserProfilePage userId={Number(userId)} />;
 }
