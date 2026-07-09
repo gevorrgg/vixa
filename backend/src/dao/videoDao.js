@@ -73,12 +73,11 @@ class VideoDao {
             )
             UPDATE videos
             SET likes = likes + 1
-            WHERE id IN (SELECT video_id FROM inserted);
+            WHERE id IN (SELECT video_id FROM inserted)
+            RETURNING id;
         `
 
         const res = await db.query(sql, [userId, videoId])
-
-        console.log(res.rows[0])
 
         return !!res.rows[0]
     }
@@ -92,7 +91,8 @@ class VideoDao {
             )
             UPDATE videos
             SET likes = likes - 1
-            WHERE id IN (SELECT video_id FROM deleted);
+            WHERE id IN (SELECT video_id FROM deleted)
+            RETURNING id;
         `
 
         const res = await db.query(sql, [userId, videoId])
