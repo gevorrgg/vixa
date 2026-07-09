@@ -1,4 +1,4 @@
-const db = require('./db')
+const db = require("./db")
 
 class UserDao {
     static async getUserInfo (userId) {
@@ -20,7 +20,7 @@ class UserDao {
             profiles ON profiles.user_id = users.id
         WHERE
             users.id = $1`,
-            [userId]
+            [userId],
         )
 
         const row = result.rows[0]
@@ -31,17 +31,17 @@ class UserDao {
     }
 
     static async updateUsername (userId, newUsername) {
-        const query = await db.query(
-            `UPDATE users SET username = $1 WHERE id = $2`,
-            [newUsername, userId]
-        )
+        const query = await db.query(`UPDATE users SET username = $1 WHERE id = $2`, [
+            newUsername,
+            userId,
+        ])
     }
 
     static async getUserIdByEmail (email) {
         const queryResult = await db.query(
             `
             SELECT id FROM users WHERE email = $1`,
-            [email]
+            [email],
         )
 
         if (queryResult.rows.length === 0) return null
@@ -50,10 +50,9 @@ class UserDao {
     }
 
     static async getUserIdByUsername (username) {
-        const queryResult = await db.query(
-            `SELECT id AS id FROM users WHERE username = $1 `,
-            [username]
-        )
+        const queryResult = await db.query(`SELECT id AS id FROM users WHERE username = $1 `, [
+            username,
+        ])
 
         if (queryResult.rows.length === 0) return null
 
@@ -63,7 +62,7 @@ class UserDao {
     static async getFollowersCount (userId) {
         const result = await db.query(
             `SELECT COUNT(*) AS followersCount FROM followers WHERE following_id = $1`,
-            [userId]
+            [userId],
         )
 
         return Number(result.rows[0].followerscount)
@@ -74,10 +73,29 @@ class UserDao {
             `SELECT COUNT(video_id) AS totalViews 
         FROM views 
         WHERE user_id = $1`,
-            [userId]
+            [userId],
         )
 
         return Number(result.rows[0].totalviews)
+    }
+
+    static async searchUsers (prefix, limit) {
+        const sql = `
+        SELECT
+            u.id,
+            u.username,
+            p.name,
+            p.avatar_key
+        FROM users u
+        LEFT JOIN profiles p
+            ON p.user_id = u.id
+        WHERE u.username ILIKE $1
+        LIMIT $2
+    `
+
+        const res = await db.query(sql, [`${prefix}%`, limit])
+
+        return res.rows
     }
 }
 

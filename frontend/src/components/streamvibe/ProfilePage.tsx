@@ -186,7 +186,6 @@ export function ProfilePage() {
         };
     }, [userId]);
 
-    /* ── поиск пользователей по префиксу, с дебаунсом ────────────────────── */
     useEffect(() => {
         const query = userSearch.trim();
 
@@ -202,7 +201,7 @@ export function ProfilePage() {
         const timeoutId = setTimeout(async () => {
             try {
                 const res = await apiFetch<{ users: ApiUserResult[] }>(
-                    `/api/users/search?prefix=${encodeURIComponent(query)}`
+                    `/api/users/search?prefix=${encodeURIComponent(query)}&limit=10`
                 );
                 if (!cancelled) setSearchResults(res.users);
             } catch (err) {

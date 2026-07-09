@@ -1,7 +1,7 @@
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-const pool = require('../dao/db')
-const UserDao = require('../dao/userDao')
+const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
+const pool = require("../dao/db")
+const UserDao = require("../dao/userDao")
 
 class UserService {
     static async getUserInfo (userId) {
@@ -23,7 +23,7 @@ class UserService {
             avatarUrl: avatarUrl,
             website: userInfo.website ?? null,
             location: userInfo.location ?? null,
-            name: userInfo.name ?? null
+            name: userInfo.name ?? null,
         }
     }
 
@@ -31,27 +31,27 @@ class UserService {
         try {
             await UserDao.updateUsername(userId, username)
         } catch (error) {
-            const userAlreadyExists = error.code === '23505'
+            const userAlreadyExists = error.code === "23505"
 
             if (userAlreadyExists)
                 return {
                     status: 409,
                     ok: false,
-                    message: 'Username already taken'
+                    message: "Username already taken",
                 }
 
-            return { status: 500, ok: false, message: 'Server error' }
+            return { status: 500, ok: false, message: "Server error" }
         }
 
         return {
             status: 200,
             ok: true,
-            message: 'Successfuly updated username'
+            message: "Successfuly updated username",
         }
     }
 
     static async getUserId (username) {
-        return await (username.includes('@')
+        return await (username.includes("@")
             ? UserDao.getUserIdByEmail(username)
             : UserDao.getUserIdByUsername(username))
     }
@@ -66,6 +66,36 @@ class UserService {
         const views = await UserDao.getTotalViews(userId)
 
         return views
+    }
+
+    static async searchUsers (prefix, limit = 10) {
+        try {
+            if (!prefix || prefix.trim().length === 0) {
+                return {
+                    status: 400,
+                    ok: false,
+                    message: "Prefix is required",
+                }
+            }
+
+            const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50)
+
+            const users = await UserDao.searchUsers(prefix.trim(), safeLimit)
+
+            return {
+                status: 200,
+                ok: true,
+                users,
+            }
+        } catch (error) {
+            console.error(error)
+
+            return {
+                status: 500,
+                ok: false,
+                message: "Server error",
+            }
+        }
     }
 }
 
