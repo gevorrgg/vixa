@@ -116,7 +116,7 @@ class VideoService {
             return {ok: false, status: 404, message: "Could not find user or video"}
         }
 
-        return {ok: true, isLiked = likeStatus}
+        return {ok: true, isLiked: likeStatus}
     }
 }
 

@@ -108,7 +108,7 @@ class VideoController {
             return res.status(likeStatus.status).json({ok: false, message: likeStatus.message})
         }
 
-        return res.json({ok: true, isLiked = likeStatus.isLiked})
+        return res.json({ok: true, isLiked: likeStatus.isLiked})
     }
 }
 
