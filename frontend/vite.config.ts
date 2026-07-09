@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://13.62.52.116:8080'
+      '/api': 'http://51.20.192.40:8080'
     }
   },
   resolve: {
