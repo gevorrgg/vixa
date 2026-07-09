@@ -29,7 +29,7 @@ export function VideoPlayerModal({
         }
 
         checkLikeStatus();
-    }, [video.id]);
+    }, [video.id, userId]);
 
     useEffect(() => {
         function handleEscape(e: KeyboardEvent) {
