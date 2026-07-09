@@ -78,6 +78,8 @@ class VideoDao {
 
         const res = await db.query(sql, [userId, videoId])
 
+        console.log(res.rows[0])
+
         return !!res.rows[0]
     }
 
