@@ -105,11 +105,36 @@ class VideoController {
         const likeStatus = await VideoService.likeStatus(videoId, userId)
 
         if (!likeStatus.ok) { 
-            console.log(likeStatus)
             return res.status(likeStatus.status).json({ok: false, message: likeStatus.message})
         }
 
         return res.json({ok: true, isLiked: likeStatus.isLiked})
+    }
+
+    static async likeVideo(req, res) { 
+        const videoId = req.params.videoId
+        const userId = req.params.userId
+
+        const likeStatus = await VideoService.likeVideo(videoId, userId)
+
+        if (!likeStatus.ok) { 
+            return res.status(likeStatus.status).json({ok: false, message: likeStatus.message})
+        }
+
+        return res.json({ok: true})
+    }
+
+    static async removeLike(req, res) { 
+        const videoId = req.params.videoId
+        const userId = req.params.userId
+
+        const likeStatus = await VideoService.removeLike(videoId, userId)
+
+        if (!likeStatus.ok) { 
+            return res.status(likeStatus.status).json({ok: false, message: likeStatus.message})
+        }
+
+        return res.json({ok: true})
     }
 }
 

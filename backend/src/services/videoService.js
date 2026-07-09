@@ -1,8 +1,8 @@
-const VideoDao = require('../dao/videoDao')
-const { v4 } = require('uuid')
-const { s3, deleteObjectFromS3Bucket } = require('./s3')
-const { PutObjectCommand } = require('@aws-sdk/client-s3')
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
+const VideoDao = require("../dao/videoDao")
+const { v4 } = require("uuid")
+const { s3, deleteObjectFromS3Bucket } = require("./s3")
+const { PutObjectCommand } = require("@aws-sdk/client-s3")
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner")
 
 class VideoService {
     static async getUserVideos (userId) {
@@ -12,11 +12,11 @@ class VideoService {
 
         for (const elem of dbVideos) {
             const contentUrl = elem.content_key
-            ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${elem.content_key}`
-                 : null
+                ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${elem.content_key}`
+                : null
             const thumbnailUrl = elem.thumbnail_key
-            ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${elem.thumbnail_key}`
-                 : null
+                ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${elem.thumbnail_key}`
+                : null
 
             videos.push({
                 id: elem.id,
@@ -26,21 +26,21 @@ class VideoService {
                 contentUrl: contentUrl,
                 date: elem.created_at,
                 thumbnailUrl: thumbnailUrl,
-                duration: elem.duration
+                duration: elem.duration,
             })
         }
 
         return videos
     }
 
-    static async createVideo(userId, video) {  
+    static async createVideo (userId, video) {
         try {
             await VideoDao.createVideo(userId, video)
         } catch (error) {
-            return { ok: false, message: 'Failed to upload video' }
+            return { ok: false, message: "Failed to upload video" }
         }
 
-        return { ok: true, message: 'Successfully uploaded video' }
+        return { ok: true, message: "Successfully uploaded video" }
     }
 
     static async getVideosCount (userId) {
@@ -49,23 +49,23 @@ class VideoService {
         return videosCount
     }
 
-    static async getContentUploadUrl(userId, fileType) {
+    static async getContentUploadUrl (userId, fileType) {
         const extMap = {
-            'video/mp4': 'mp4',
-            'video/webm': 'webm',
-            'video/ogg': 'ogg'
+            "video/mp4": "mp4",
+            "video/webm": "webm",
+            "video/ogg": "ogg",
         }
 
-        const ext = extMap[fileType] || 'bin'
+        const ext = extMap[fileType] || "bin"
         const key = `videos/${userId}/content/${v4()}.${ext}`
 
         const command = new PutObjectCommand({
             Bucket: process.env.S3_BUCKET,
-            Key: key
+            Key: key,
         })
 
         const uploadUrl = await getSignedUrl(s3, command, {
-            expiresIn: 3600
+            expiresIn: 3600,
         })
 
         return { uploadUrl, key }
@@ -73,32 +73,32 @@ class VideoService {
 
     static async getThumbnailUploadUrl (userId, fileType) {
         const extMap = {
-            'image/jpeg': 'jpg',
-            'image/png': 'png',
-            'image/webp': 'webp',
-            'image/gif': 'gif'
+            "image/jpeg": "jpg",
+            "image/png": "png",
+            "image/webp": "webp",
+            "image/gif": "gif",
         }
 
-        const ext = extMap[fileType] || 'bin'
+        const ext = extMap[fileType] || "bin"
         const key = `videos/${userId}/thumbnails/${v4()}.${ext}`
 
         const command = new PutObjectCommand({
             Bucket: process.env.S3_BUCKET,
-            Key: key
+            Key: key,
         })
 
         const uploadUrl = await getSignedUrl(s3, command, {
-            expiresIn: 3600
+            expiresIn: 3600,
         })
 
         return { uploadUrl, key }
     }
 
-    static async deleteVideo(videoId, userId) {
-       const deletedVideo = await VideoDao.deleteVideoById(videoId, userId)
-        
-        if (!deletedVideo) { 
-            return {ok: false}
+    static async deleteVideo (videoId, userId) {
+        const deletedVideo = await VideoDao.deleteVideoById(videoId, userId)
+
+        if (!deletedVideo) {
+            return { ok: false }
         }
 
         const { contentKey, thumbnailKey } = deletedVideo
@@ -106,19 +106,42 @@ class VideoService {
         deleteObjectFromS3Bucket(contentKey)
         deleteObjectFromS3Bucket(thumbnailKey)
 
-        return {ok: true}
+        return { ok: true }
     }
 
-    static async likeStatus(videoId, userId) { 
+    static async likeStatus (videoId, userId) {
         const likeStatus = await VideoDao.isVideoLikedByUser(videoId, userId)
 
-        if (!likeStatus) {
-            return {ok: false, status: 404, message: "Could not find user or video"}
-        }
+        return { ok: true, isLiked: likeStatus }
+    }
 
-        return {ok: true, isLiked: likeStatus}
+    static async likeVideo (videoId, userId) {
+        try {
+            const likeStatus = await VideoDao.likeVideo(videoId, userId)
+
+            if (!likeStatus) {
+                return { status: 409, ok: false, message: "User already liked the video" }
+            }
+
+            return { ok: true }
+        } catch (error) {
+            return { status: 500, ok: false, message: "Server error" }
+        }
+    }
+
+    static async removeLike (viedoId, userId) {
+        try {
+            const likeStatus = await VideoDao.deleteLike(videoId, userId)
+
+            if (!likeStatus) {
+                return { status: 409, ok: false, message: "Video is not liked by user" }
+            }
+
+            return { ok: true }
+        } catch (error) {
+            return { status: 500, ok: false, message: "Server error" }
+        }
     }
 }
-
 
 module.exports = VideoService
