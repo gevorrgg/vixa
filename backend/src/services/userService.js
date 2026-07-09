@@ -86,7 +86,7 @@ class UserService {
                 id: user.id,
                 username: user.username,
                 name: user.name,
-                avatarUrl: userInfo.avatar_key
+                avatarUrl: user.avatar_key
                 ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${user.avatar_key}`
                     : null,
                 followersCounut: user.followersCounut,
