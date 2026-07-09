@@ -1,18 +1,22 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import path from "path";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    TanStackRouterVite(),
+    react(),
+  ],
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://51.20.192.40:8080'
-    }
+      "/api": "http://51.20.192.40:8080",
+    },
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src')
-    }
-  }
-})
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+});
