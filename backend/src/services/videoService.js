@@ -27,6 +27,7 @@ class VideoService {
                 date: elem.created_at,
                 thumbnailUrl: thumbnailUrl,
                 duration: elem.duration,
+                likes: elem.likes
             })
         }
 

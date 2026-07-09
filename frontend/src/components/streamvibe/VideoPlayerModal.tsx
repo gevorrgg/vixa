@@ -117,7 +117,6 @@ export function VideoPlayerModal({
                             aria-label={liked ? "Unlike" : "Like"}
                         >
                             <span className="video-like-icon">{liked ? "❤️" : "🤍"}</span>
-                            {liked ? "Liked" : "Like"}
                             <span className="video-like-count">{formatLikes(likesCount)}</span>
                         </button>
                     </div>
