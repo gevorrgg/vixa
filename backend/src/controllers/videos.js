@@ -98,7 +98,7 @@ class VideoController {
         const videoId = req.params.videoId
         const userId = req.params.userId
 
-        console.log(userId, videoId)
+        console.log(userId, req.user.id)
 
         if (userId != req.user.id) { 
             return res.status(403).json({ok: false, message: 'forbidden'})
