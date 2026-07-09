@@ -117,29 +117,55 @@ class VideoService {
 
     static async likeVideo (videoId, userId) {
         try {
-            const likeStatus = await VideoDao.likeVideo(videoId, userId)
+            const liked = await VideoDao.likeVideo(videoId, userId)
 
-            if (!likeStatus) {
-                return { status: 409, ok: false, message: "User already liked the video" }
+            if (!liked) {
+                return {
+                    status: 409,
+                    ok: false,
+                    message: "Video already liked",
+                }
             }
 
-            return { ok: true }
+            return {
+                status: 201,
+                ok: true,
+            }
         } catch (error) {
-            return { status: 500, ok: false, message: "Server error" }
+            console.error(error)
+
+            return {
+                status: 500,
+                ok: false,
+                message: "Server error",
+            }
         }
     }
 
-    static async removeLike (viedoId, userId) {
+    static async removeLike (videoId, userId) {
         try {
             const likeStatus = await VideoDao.deleteLike(videoId, userId)
 
             if (!likeStatus) {
-                return { status: 409, ok: false, message: "Video is not liked by user" }
+                return {
+                    status: 404,
+                    ok: false,
+                    message: "Video is not liked by user",
+                }
             }
 
-            return { ok: true }
+            return {
+                status: 200,
+                ok: true,
+            }
         } catch (error) {
-            return { status: 500, ok: false, message: "Server error" }
+            console.error(error)
+
+            return {
+                status: 500,
+                ok: false,
+                message: "Server error",
+            }
         }
     }
 }
