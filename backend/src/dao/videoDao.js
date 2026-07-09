@@ -65,22 +65,32 @@ class VideoDao {
 
     static async likeVideo (videoId, userId) {
         const sql = `
-        INSERT INTO likes(user_id, video_id)
-        VALUES ($1, $2)
-        ON CONFLICT DO NOTHING
-        RETURNING video_id
-    `
+            WITH inserted AS (
+                INSERT INTO likes(user_id, video_id)
+                VALUES ($1, $2)
+                ON CONFLICT DO NOTHING
+                RETURNING video_id
+            )
+            UPDATE videos
+            SET likes = likes + 1
+            WHERE id IN (SELECT video_id FROM inserted);
+        `
 
         const res = await db.query(sql, [userId, videoId])
 
         return !!res.rows[0]
     }
 
-    static async deleteLike (videoId, userId) { 
+    static async deleteLike (videoId, userId) {
         const sql = `
-            DELETE FROM likes
-            WHERE user_id = $1 AND video_id = $2
-            RETURNING video_id
+            WITH deleted AS (
+                DELETE FROM likes
+                WHERE user_id = $1 AND video_id = $2
+                RETURNING video_id
+            )
+            UPDATE videos
+            SET likes = likes - 1
+            WHERE id IN (SELECT video_id FROM deleted);
         `
 
         const res = await db.query(sql, [userId, videoId])
