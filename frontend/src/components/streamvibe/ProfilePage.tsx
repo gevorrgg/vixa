@@ -458,7 +458,8 @@ export function ProfilePage() {
                         const name = u.name || u.username;
                         return (
                             <div className="user-row" key={u.id}>
-                                <div className="user-avatar" style={{ background: gradFromId(u.id) }}>
+                                <div className="user-avatar" style={{ background: gradFromId(u.id) }}
+                                onClick={() => navigate({ to: `/users/${u?.id}`, params: {userId: u?.id} })}>
                                     {u.avatarUrl ? <img src={u.avatarUrl} alt="" /> : initialsOf(name)}
                                 </div>
                                 <div className="user-meta">
