@@ -79,21 +79,52 @@ class UserDao {
         return Number(result.rows[0].totalviews)
     }
 
-    static async searchUsers (prefix, limit) {
+    static async searchUsers (prefix, userId, limit) {
+        if (userId == null) {
+            const sql = `
+            SELECT
+                u.id,
+                u.username,
+                p.name,
+                p.avatar_key,
+                u.followers_count AS "followersCount",
+                FALSE AS following
+            FROM users u
+            LEFT JOIN profiles p
+                ON p.user_id = u.id
+            WHERE u.username ILIKE $1
+            ORDER BY u.followers_count DESC, u.username ASC
+            LIMIT $2
+        `
+
+            const res = await db.query(sql, [`${prefix}%`, limit])
+
+            return res.rows
+        }
+
         const sql = `
         SELECT
             u.id,
             u.username,
             p.name,
-            p.avatar_key
+            p.avatar_key,
+            u.followers_count AS "followersCount",
+            EXISTS (
+                SELECT 1
+                FROM followers f
+                WHERE f.follower_id = $2
+                  AND f.following_id = u.id
+            ) AS following
         FROM users u
         LEFT JOIN profiles p
             ON p.user_id = u.id
         WHERE u.username ILIKE $1
-        LIMIT $2
+          AND u.id <> $2
+        ORDER BY u.followers_count DESC, u.username ASC
+        LIMIT $3
     `
 
-        const res = await db.query(sql, [`${prefix}%`, limit])
+        const res = await db.query(sql, [`${prefix}%`, userId, limit])
 
         return res.rows
     }

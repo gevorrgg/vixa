@@ -68,7 +68,7 @@ class UserService {
         return views
     }
 
-    static async searchUsers (prefix, limit = 10) {
+    static async searchUsers (prefix, userId, limit = 10) {
         try {
             if (!prefix || prefix.trim().length === 0) {
                 return {
@@ -80,7 +80,18 @@ class UserService {
 
             const safeLimit = Math.min(Math.max(Number(limit) || 10, 1), 50)
 
-            const users = await UserDao.searchUsers(prefix.trim(), safeLimit)
+            const users = await UserDao.searchUsers(prefix.trim(), userId, safeLimit)
+
+            users.forEach(user => ({ 
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                avatarUrl: userInfo.avatar_key
+                ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${user.avatar_key}`
+                    : null,
+                followersCounut: user.followersCounut,
+                following: user.following
+            }))
 
             return {
                 status: 200,

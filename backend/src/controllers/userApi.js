@@ -20,8 +20,9 @@ class UserApiController {
 
     static async searchUsers (req, res) {
         const { prefix, limit } = req.query
+        const userId = req.user ? req.user.id : null 
 
-        const result = await UserService.searchUsers(prefix, limit)
+        const result = await UserService.searchUsers(prefix, userId, limit)
 
         return res.status(result.status).json(result)
     }
