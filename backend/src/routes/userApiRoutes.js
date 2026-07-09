@@ -4,6 +4,6 @@ const UserApiController = require('../controllers/userApi')
 const router = express.Router()
 
 router.get('/:userId/stats', UserApiController.getUserStats)
-router.get('/:userId/search', UserApiController.searchUsers)
+router.get('/search', UserApiController.searchUsers)
 
 module.exports = router
