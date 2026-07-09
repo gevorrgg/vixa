@@ -46,14 +46,20 @@ export function VideoPlayerModal({
         });
     }, []);
 
-    function toggleLike() {
-        setLiked((prev) => {
-            const next = !prev;
-            setLikesCount((count) => count + (next ? 1 : -1));
-            return next;
-        });
-        // TODO: подключить вызов API, например:
-        // apiFetch(`/api/videos/${video.id}/like`, { method: liked ? "DELETE" : "POST" })
+    async function toggleLike() {
+        const nextLiked = !liked;
+
+        try {
+            await apiFetch(`/api/users/${userId}/videos/${video.id}/like`, {
+                method: nextLiked ? "POST" : "DELETE",
+            });
+
+            setLiked(nextLiked);
+            setLikesCount((count) => count + (nextLiked ? 1 : -1));
+
+        } catch (err) {
+            console.error("Failed to toggle like", err);
+        }
     }
 
     return (
