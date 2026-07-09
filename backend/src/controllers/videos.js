@@ -98,8 +98,6 @@ class VideoController {
         const videoId = req.params.videoId
         const userId = req.params.userId
 
-        console.log(userId, req.user.id)
-
         if (userId != req.user.id) { 
             return res.status(403).json({ok: false, message: 'forbidden'})
         }
@@ -107,6 +105,7 @@ class VideoController {
         const likeStatus = await VideoService.likeStatus(videoId, userId)
 
         if (!likeStatus.ok) { 
+            console.log(likeStatus)
             return res.status(likeStatus.status).json({ok: false, message: likeStatus.message})
         }
 
