@@ -10,7 +10,7 @@ router.post(
     authMiddleware,
     VideoController.getVideoUploadUrl
 )
-router.get('/:userId/videos/:videoId/like-status')
+router.get('/:userId/videos/:videoId/like-status', VideoController.videoLikeStatus)
 router.post('/:userId/videos', authMiddleware, VideoController.createVideo)
 router.delete('/:userId/videos/:videoId', authMiddleware, VideoController.deleteVideo)
 
