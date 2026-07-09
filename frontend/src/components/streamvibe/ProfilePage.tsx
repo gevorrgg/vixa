@@ -312,7 +312,7 @@ export function ProfilePage() {
                         <>
                             <button
                                 className="top-avatar"
-                                onClick={() => navigate({ to: "/" })}
+                                onClick={() => navigate({ to: `/users/${profile?.id}`, params: {userId: profile?.id} })}
                                 title="My profile"
                                 style={
                                     profile?.avatarUrl
