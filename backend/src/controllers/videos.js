@@ -96,7 +96,7 @@ class VideoController {
 
     static async videoLikeStatus(req, res) {
         const videoId = req.params.videoId
-        const userId = req.params.user
+        const userId = req.params.userId
 
         console.log(userId, videoId)
 
