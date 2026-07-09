@@ -25,15 +25,6 @@ const TAGS: Record<string, { label: string; cls: string }> = {
     other: { label: "Other", cls: "tag-purple" },
 };
 
-const USERS = [
-    { name: "Mia Chen", handle: "@mia_creates", subs: "212K", color: "#a259ff", init: "M", following: false },
-    { name: "Jordan Lee", handle: "@jordantech", subs: "88K", color: "#ff5c87", init: "J", following: false },
-    { name: "Sam Torres", handle: "@samvisuals", subs: "1.4M", color: "#00d4ff", init: "S", following: true },
-    { name: "Priya Kapoor", handle: "@priyabeats", subs: "340K", color: "#2dde98", init: "P", following: false },
-    { name: "Luca Romano", handle: "@lucaromano", subs: "57K", color: "#ffa45c", init: "L", following: false },
-    { name: "Aiko Tanaka", handle: "@aikocreates", subs: "920K", color: "#ff5c87", init: "A", following: false },
-];
-
 const TRENDING = [
     { title: "AI Generated Art – Prompt Engineering Secrets", views: "1.2M", emoji: "🎨", grad: 4 },
     { title: "100 Days of Code – Final Results", views: "892K", emoji: "💻", grad: 0 },
@@ -68,6 +59,16 @@ export type ApiProfile = {
 };
 
 type ApiStats = { videosCount: number; followersCount: number; totalViews: number };
+
+/* пользователь, приходящий с /search и /recommendations */
+export type ApiUserResult = {
+    id: number;
+    username: string;
+    name: string | null;
+    avatarUrl: string | null;
+    followersCount: number;
+    following: boolean;
+};
 
 /* ── helpers ────────────────────────────────────────────────────────── */
 function hash(str: string): number {
@@ -113,7 +114,9 @@ export function ProfilePage() {
     const [uploadOpen, setUploadOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
     const [userSearch, setUserSearch] = useState("");
-    const [userList, setUserList] = useState(USERS);
+    const [recommendations, setRecommendations] = useState<ApiUserResult[]>([]);
+    const [searchResults, setSearchResults] = useState<ApiUserResult[]>([]);
+    const [searchLoading, setSearchLoading] = useState(false);
 
 
     /* ── load auth + data ─────────────────────────────────────────────── */
@@ -161,18 +164,69 @@ export function ProfilePage() {
         setVideos(v.videos);
     }, [userId]);
 
+    /* ── recommendations (показываются, пока поле поиска пустое) ────────── */
+    useEffect(() => {
+        if (!userId) return;
+
+        let cancelled = false;
+
+        (async () => {
+            try {
+                const res = await apiFetch<{ users: ApiUserResult[] }>(
+                    `/api/users/${userId}/recommendations`
+                );
+                if (!cancelled) setRecommendations(res.users);
+            } catch (err) {
+                console.error("Failed to load recommendations", err);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [userId]);
+
+    /* ── поиск пользователей по префиксу, с дебаунсом ────────────────────── */
+    useEffect(() => {
+        const query = userSearch.trim();
+
+        if (!query) {
+            setSearchResults([]);
+            setSearchLoading(false);
+            return;
+        }
+
+        setSearchLoading(true);
+        let cancelled = false;
+
+        const timeoutId = setTimeout(async () => {
+            try {
+                const res = await apiFetch<{ users: ApiUserResult[] }>(
+                    `/api/users/search?prefix=${encodeURIComponent(query)}`
+                );
+                if (!cancelled) setSearchResults(res.users);
+            } catch (err) {
+                console.error("Failed to search users", err);
+                if (!cancelled) setSearchResults([]);
+            } finally {
+                if (!cancelled) setSearchLoading(false);
+            }
+        }, 300);
+
+        return () => {
+            cancelled = true;
+            clearTimeout(timeoutId);
+        };
+    }, [userSearch]);
+
     /* ── computed ─────────────────────────────────────────────────────── */
     const filtered = useMemo(
         () => (activeFilter === "all" ? videos : videos.filter((v) => v.category === activeFilter)),
         [videos, activeFilter],
     );
 
-    const filteredUsers = useMemo(() => {
-        const q = userSearch.toLowerCase();
-        return userList.filter(
-            (u) => u.name.toLowerCase().includes(q) || u.handle.toLowerCase().includes(q),
-        );
-    }, [userList, userSearch]);
+    const isSearching = userSearch.trim().length > 0;
+    const displayedUsers = isSearching ? searchResults : recommendations;
 
     const avatarGrad = useMemo(() => (userId ? gradFromId(userId) : ""), [userId]);
     const displayName = profile?.name || profile?.username || "";
@@ -184,13 +238,23 @@ export function ProfilePage() {
         navigate({ to: "/auth", replace: true });
     }
 
-    function toggleFollow(idx: number) {
-        setUserList((prev) => {
-            const next = [...prev];
-            next[idx] = { ...next[idx], following: !next[idx].following };
-            showToast(next[idx].following ? `Following ${next[idx].name}!` : `Unfollowed ${next[idx].name}`);
-            return next;
-        });
+    function toggleFollow(targetId: number) {
+        const updater = (list: ApiUserResult[]) =>
+            list.map((u) => (u.id === targetId ? { ...u, following: !u.following } : u));
+
+        if (isSearching) {
+            setSearchResults(updater);
+        } else {
+            setRecommendations(updater);
+        }
+
+        const source = isSearching ? searchResults : recommendations;
+        const target = source.find((u) => u.id === targetId);
+        if (target) {
+            showToast(!target.following ? `Following ${target.name ?? target.username}!` : `Unfollowed ${target.name ?? target.username}`);
+        }
+
+        // TODO: подключить реальный эндпоинт follow/unfollow, когда он появится на бэке
     }
 
     const handleDeleteVideo = async (videoId: number) => {
@@ -380,19 +444,26 @@ export function ProfilePage() {
                 </div>
 
                 <div className="user-results">
-                    {filteredUsers.length === 0 && <p className="empty-muted">No users found</p>}
-                    {filteredUsers.map((u) => {
-                        const idx = userList.indexOf(u);
+                    {searchLoading && <p className="empty-muted">Searching…</p>}
+                    {!searchLoading && displayedUsers.length === 0 && (
+                        <p className="empty-muted">
+                            {isSearching ? "No users found" : "No recommendations yet"}
+                        </p>
+                    )}
+                    {!searchLoading && displayedUsers.map((u) => {
+                        const name = u.name || u.username;
                         return (
-                            <div className="user-row" key={u.handle}>
-                                <div className="user-avatar" style={{ background: u.color }}>{u.init}</div>
+                            <div className="user-row" key={u.id}>
+                                <div className="user-avatar" style={{ background: gradFromId(u.id) }}>
+                                    {u.avatarUrl ? <img src={u.avatarUrl} alt="" /> : initialsOf(name)}
+                                </div>
                                 <div className="user-meta">
-                                    <div className="user-name">{u.name}</div>
-                                    <div className="user-sub">{u.handle} · {u.subs} subs</div>
+                                    <div className="user-name">{name}</div>
+                                    <div className="user-sub">@{u.username} · {humanReadable(u.followersCount)} subs</div>
                                 </div>
                                 <button
                                     className={`follow-btn${u.following ? " following" : ""}`}
-                                    onClick={() => toggleFollow(idx)}
+                                    onClick={() => toggleFollow(u.id)}
                                 >
                                     {u.following ? "✓ Following" : "+ Follow"}
                                 </button>
