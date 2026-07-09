@@ -314,6 +314,11 @@ export function ProfilePage() {
                                 className="top-avatar"
                                 onClick={() => navigate({ to: "/" })}
                                 title="My profile"
+                                style={
+                                    profile?.avatarUrl
+                                        ? { background: "none" }
+                                        : { background: avatarGrad }
+                                }
                             >
                                 {profile?.avatarUrl ? (
                                     <img src={profile.avatarUrl} alt="" />
@@ -525,7 +530,7 @@ export function ProfilePage() {
             {selectedVideo && (
                 <VideoPlayerModal
                     video={selectedVideo}
-                    userId={ userId }
+                    userId={userId}
                     onClose={() => setSelectedVideo(null)}
                 />
             )}
