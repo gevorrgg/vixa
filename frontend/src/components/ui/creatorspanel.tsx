@@ -1,5 +1,5 @@
 import type { ApiUserResult } from "../streamvibe/profile/types/profile.types";
-import { GRADIENTS, TRENDING } from "../streamvibe/profile/constants/profile.constants";
+import { GRADIENTS } from "../streamvibe/profile/constants/profile.constants";
 import { gradFromId, humanReadable, initialsOf } from "../streamvibe/profile/utils/format";
 
 
@@ -67,23 +67,6 @@ export function CreatorsPanel({
                             </div>
                         );
                     })}
-            </div>
-
-            <div>
-                <div className="panel-label">Trending Now</div>
-                <div className="trending-list">
-                    {TRENDING.map((t) => (
-                        <div className="trending-item" key={t.title}>
-                            <div className="trending-thumb" style={{ background: GRADIENTS[t.grad % GRADIENTS.length] }}>
-                                {t.emoji}
-                            </div>
-                            <div className="trending-meta">
-                                <div className="trending-title">{t.title}</div>
-                                <div className="trending-views">{t.views}</div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
             </div>
         </aside>
     );
