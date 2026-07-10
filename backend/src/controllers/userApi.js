@@ -56,8 +56,6 @@ class UserApiController {
         const followingId = req.params.userId
         const followerId = req.user.id
 
-        console.log(followingId, followerId)
-
         if (Number.isNaN(followingId)) {
             return res.status(400), json({ ok: false, message: "Invalid id" })
         }

@@ -145,7 +145,7 @@ class UserDao {
 
         const result = await db.query(sql, [followingId, followerId])
 
-        return !!result.rows[0].id
+        return !!result.rows[0]
     }
 
     static async unfollow(followingId, followerId) { 
@@ -163,7 +163,7 @@ class UserDao {
 
         const result = await db.query(sql, [followingId, followerId])
 
-        return !!result.rows[0].id
+        return !!result.rows[0]
     }
 }
 
