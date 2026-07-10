@@ -28,8 +28,6 @@ class UserApiController {
             users: result.users,
         }
 
-        console.log("FINAL HTTP RESPONSE:", JSON.stringify(response))
-
         return res.status(result.status).json(response)
     }
 
