@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { clearAuthSession, getStoredAuthSession } from "../../lib/api-client";
+import { apiFetch, clearAuthSession, getStoredAuthSession } from "../../lib/api-client";
 import { UploadModal } from "./UploadModal";
 import { EditProfileModal } from "./EditProfileModal";
 import { Toast, useToast } from "./Toast";
@@ -17,7 +17,7 @@ import { useCreatorSearch } from "../../hooks/use-creator-search";
 
 import { FILTER_CHIPS } from "../streamvibe/profile/constants/profile.constants";
 import { gradFromId } from "../streamvibe/profile/utils/format";
-import type { ApiVideo } from "../streamvibe/profile/types/profile.types";
+import type { ApiUserResult, ApiVideo } from "../streamvibe/profile/types/profile.types";
 
 export function ProfilePage() {
     const navigate = useNavigate();
@@ -48,12 +48,45 @@ export function ProfilePage() {
         navigate({ to: "/auth", replace: true });
     }
 
-    function handleToggleFollow(targetId: number) {
-        const target = toggleFollow(targetId);
-        if (target) {
-            showToast(!target.following ? `Following ${target.name ?? target.username}!` : `Unfollowed ${target.name ?? target.username}`);
+    async function handleToggle(target: ApiUserResult | undefined) {
+        if (!target) {
+            throw new Error("Failed to update follow status")
+        }
+
+        const method = target?.following ? 'DELETE' : 'POST'
+
+        const response = await apiFetch<{ ok: boolean, subscribed: boolean }>(`/api/users/${target.id}/follow`, { method })
+
+        if (!response.ok) {
+            throw new Error("Failed to update follow status");
         }
     }
+
+  async function handleToggleFollow(targetId: number) {
+    const target = displayedUsers.find((user) => user.id === targetId);
+
+    if (!target) {
+        showToast("User not found");
+        return;
+    }
+
+    const willFollow = !target.following;
+    const name = target.name ?? target.username ?? "user";
+
+    try {
+        await toggleFollow(targetId);
+
+        showToast(
+            willFollow
+                ? `Following ${name}!`
+                : `Unfollowed ${name}`,
+        );
+    } catch (error) {
+        console.error("Failed to update follow status", error);
+        showToast("Failed to update follow status");
+    }
+}
+
 
     async function handleDeleteVideo(videoId: number) {
         try {

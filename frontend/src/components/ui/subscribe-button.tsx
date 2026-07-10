@@ -1,22 +1,45 @@
+import { useState } from "react";
 import { Check } from "lucide-react";
 
 type SubscribeButtonProps = {
     subscribed: boolean;
-    onToggle: () => void;
+    onToggle: () => Promise<void>;
     size?: "sm" | "md";
 };
 
+export function SubscribeButton({
+    subscribed,
+    onToggle,
+    size = "md",
+}: SubscribeButtonProps) {
+    const [loading, setLoading] = useState(false);
 
-export function SubscribeButton({ subscribed, onToggle, size = "md" }: SubscribeButtonProps) {
+    async function handleClick() {
+        if (loading) {
+            return;
+        }
+
+        try {
+            setLoading(true);
+            await onToggle();
+        } finally {
+            setLoading(false);
+        }
+    }
+
     return (
         <button
             className={`subscribe-btn subscribe-${size}${subscribed ? " subscribed" : ""}`}
-            onClick={onToggle}
+            onClick={handleClick}
             aria-pressed={subscribed}
+            disabled={loading}
         >
-            {subscribed ? (
+            {loading ? (
+                "Loading..."
+            ) : subscribed ? (
                 <>
-                    <Check size={14} /> Subscribed
+                    <Check size={14} />
+                    Subscribed
                 </>
             ) : (
                 "Subscribe"

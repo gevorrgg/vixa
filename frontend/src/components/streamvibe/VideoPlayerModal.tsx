@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ApiVideo } from "./ProfilePage";
+import type { ApiVideo } from "../streamvibe/profile/types/profile.types";
 import { apiFetch } from "../../lib/api-client";
 
 export function VideoPlayerModal({

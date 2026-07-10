@@ -82,15 +82,15 @@ class UserService {
 
             const users = await UserDao.searchUsers(prefix.trim(), userId, safeLimit)
 
-            users.forEach(user => ({ 
+            users.forEach(user => ({
                 id: user.id,
                 username: user.username,
                 name: user.name,
                 avatarUrl: user.avatar_key
-                ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${user.avatar_key}`
+                    ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${user.avatar_key}`
                     : null,
                 followersCounut: user.followersCounut,
-                following: user.following
+                following: user.following,
             }))
 
             return {
@@ -106,6 +106,38 @@ class UserService {
                 ok: false,
                 message: "Server error",
             }
+        }
+    }
+
+    static async follow (followingId, followerId) {
+        try {
+            const followed = await UserDao.follow(followingId, followerId)
+
+            if (!followed) {
+                return { status: 409, ok: false, message: "User already subscirbed" }
+            }
+
+            return { ok: true }
+        } catch (error) {
+            console.error(error)
+
+            return { status: 500, ok: false, message: "Server error" }
+        }
+    }
+
+    static async unfollow (followingId, followerId) {
+        try {
+            const unfollowed = await UserDao.follow(followingId, followerId)
+
+            if (!unfollowed) {
+                return { status: 409, ok: false, message: "User already is unfollowed" }
+            }
+
+            return { ok: true }
+        } catch (error) {
+            console.error(error)
+
+            return { status: 500, ok: false, message: "Server error" }
         }
     }
 }

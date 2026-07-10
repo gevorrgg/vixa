@@ -20,11 +20,53 @@ class UserApiController {
 
     static async searchUsers (req, res) {
         const { prefix, limit } = req.query
-        const userId = req.user ? req.user.id : null 
+        const userId = req.user ? req.user.id : null
 
         const result = await UserService.searchUsers(prefix, userId, limit)
 
         return res.status(result.status).json(result)
+    }
+
+    static async follow (req, res) {
+        if (!req.user) {
+            return res.status(401).json({ ok: false, message: "Unauthorized" })
+        }
+
+        const followingId = req.params.userId
+        const followerId = req.user.id
+
+        if (Number.isNaN(followingId)) {
+            return res.status(400), json({ ok: false, message: "Invalid id" })
+        }
+
+        const result = await UserService.follow(followingId, followerId)
+
+        if (!result.ok) {
+            return res.status(result.status).json({ ok: false, message: result.status })
+        }
+
+        return { ok: true }
+    }
+
+    static async unfollow (req, res) {
+        if (!req.user) {
+            return res.status(401).json({ ok: false, message: "Unauthorized" })
+        }
+
+        const followingId = req.params.userId
+        const followerId = req.user.id
+
+        if (Number.isNaN(followingId)) {
+            return res.status(400), json({ ok: false, message: "Invalid id" })
+        }
+
+        const result = await UserService.unfollow(followingId, followerId)
+
+        if (!result.ok) {
+            return res.status(result.status).json({ ok: false, message: result.status })
+        }
+
+        return { ok: true }
     }
 }
 

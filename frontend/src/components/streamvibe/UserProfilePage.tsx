@@ -72,16 +72,24 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
 
     async function handleToggleFollow() {
         const willFollow = !following;
+
         try {
             await toggleFollow();
-            const name = profile?.name ?? profile?.username;
-            showToast(willFollow ? `Following ${name}!` : `Unfollowed ${name}`);
-        } catch {
+
+            const name = profile?.name ?? profile?.username ?? "user";
+
+            showToast(
+                willFollow
+                    ? `Following ${name}!`
+                    : `Unfollowed ${name}`
+            );
+        } catch (error) {
+            console.error(error);
             showToast("Failed to update follow status");
         }
     }
-
-    function handleToggleRecommendationFollow(targetId: number) {
+    
+    async function handleToggleRecommendationFollow(targetId: number) {
         const target = toggleRecommendationFollow(targetId);
         if (target) {
             showToast(
@@ -132,7 +140,7 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
                 <VideoGrid
                     videos={filtered}
                     showActions={false}
-                    onDelete={() => {}}
+                    onDelete={() => { }}
                     onOpenVideo={(video) => setSelectedVideo(video)}
                 />
             </main>

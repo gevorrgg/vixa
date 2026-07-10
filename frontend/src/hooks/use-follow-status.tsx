@@ -63,9 +63,9 @@ export function useFollowStatus(
 
         try {
             await apiFetch(
-                `/api/users/${targetUserId}/${next ? "follow" : "unfollow"}`,
+                `/api/users/${targetUserId}/${next ? 'follow' : 'unfollow'}`,
                 {
-                    method: "POST",
+                    method: next ? "POST" : "DELETE",
                 }
             );
         } catch (err) {

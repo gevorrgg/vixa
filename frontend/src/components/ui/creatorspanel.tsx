@@ -11,7 +11,7 @@ type CreatorsPanelProps = {
     isSearching: boolean;
     searchLoading: boolean;
     displayedUsers: ApiUserResult[];
-    onToggleFollow: (targetId: number) => void;
+    onToggleFollow: (targetId: number) => Promise<void>;
     onOpenUser: (user: ApiUserResult) => void;
 };
 
@@ -63,7 +63,7 @@ export function CreatorsPanel({
                                         @{u.username} · {humanReadable(u.followersCount)} subs
                                     </div>
                                 </div>
-                                <SubscribeButton subscribed={u.following} onToggle={() => onToggleFollow(u.id)} size="sm" />
+                                <SubscribeButton subscribed={u.following} onToggle={async () => await onToggleFollow(u.id)} size="sm" />
                             </div>
                         );
                     })}

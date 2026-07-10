@@ -7,5 +7,5 @@ export const Route = createFileRoute("/users/$userId")({
 
 function RouteComponent() {
     const { userId } = Route.useParams();
-    return <UserProfilePage userId={Number(userId)} />;
+    return <UserProfilePage userId={Number(userId)} initialFollowing />;
 }

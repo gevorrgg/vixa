@@ -128,6 +128,43 @@ class UserDao {
 
         return res.rows
     }
+
+    static async follow(followingId, followerId) { 
+        const sql = `
+            WITH followed AS (
+                INSERT INTO followers(following_id, follower_id)
+                VALUES ($1, $2)
+                ON CONFLICT DO NOTHING
+                RETURNING following_id
+            )
+            UPDATE users
+            SET followers_count = followers_count + 1
+            WHERE id IN (SELECT following_id FROM followed)
+            RETURNING id
+        `
+
+        const result = await db.query(sql, [followingId, followerId])
+
+        return !!result.rows[0].id
+    }
+
+    static async unfollow(followingId, followerId) { 
+        const sql = `
+            WITH deleted AS (
+                DELETE FROM followers
+                WHERE following_id = $1 AND follower_id = $2
+                RETURNING following_id
+            )
+            UPDATE users
+            SET followers_count = followers_count - 1
+            WHERE id IN (SELECT following_id FROM deleted)
+            RETURNING id
+        `
+
+        const result = await db.query(sql, [followingId, followerId])
+
+        return !!result.rows[0].id
+    }
 }
 
 module.exports = UserDao
