@@ -89,7 +89,7 @@ class UserService {
                 avatarUrl: user.avatar_key
                     ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${user.avatar_key}`
                     : null,
-                followersCount: user.followers_count,
+                followers: user.followers_count,
                 following: user.following,
             }))
 
