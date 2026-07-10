@@ -45,7 +45,7 @@ class UserApiController {
             return res.status(result.status).json({ ok: false, message: result.status })
         }
 
-        return { ok: true }
+        return res.json({ ok: true })
     }
 
     static async unfollow (req, res) {
