@@ -9,7 +9,7 @@ type UseFollowStatusResult = {
 
 export function useFollowStatus(
     targetUserId: number | null,
-    initialFollowing: boolean | null
+    initialFollowing: boolean | null,
 ): UseFollowStatusResult {
     const [following, setFollowing] = useState(initialFollowing ?? false);
     const [loading, setLoading] = useState(initialFollowing === null);
@@ -28,12 +28,13 @@ export function useFollowStatus(
         }
 
         let cancelled = false;
+
         setLoading(true);
 
         async function loadFollowStatus() {
             try {
                 const res = await apiFetch<{ following: boolean }>(
-                    `/api/users/${targetUserId}/follow-status`
+                    `/api/users/${targetUserId}/follow-status`,
                 );
 
                 if (!cancelled) {
@@ -56,17 +57,20 @@ export function useFollowStatus(
     }, [targetUserId, initialFollowing]);
 
     async function toggleFollow() {
-        if (!targetUserId) return;
+        if (!targetUserId) {
+            return;
+        }
 
         const next = !following;
+
         setFollowing(next);
 
         try {
             await apiFetch(
-                `/api/users/${targetUserId}/${next ? 'unfollow' : 'follow'}`,
+                `/api/users/${targetUserId}/${next ? "follow" : "unfollow"}`,
                 {
-                    method: next ? "DELETE" : "POST",
-                }
+                    method: next ? "POST" : "DELETE",
+                },
             );
         } catch (err) {
             setFollowing(!next);
