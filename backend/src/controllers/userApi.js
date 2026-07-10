@@ -22,11 +22,13 @@ class UserApiController {
         const { prefix, limit } = req.query
         const userId = req.user ? req.user.id : null
 
-        const result = await UserService.searchUsers(prefix, userId, limit)
+        const response = {
+            users: result.users,
+        }
 
-        console.log(result)
+        console.log("FINAL HTTP RESPONSE:", JSON.stringify(response))
 
-        return res.status(result.status).json({ users: result.users })
+        return res.status(result.status).json(response)
     }
 
     static async follow (req, res) {
