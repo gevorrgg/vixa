@@ -1,5 +1,4 @@
 import type { ApiUserResult } from "../streamvibe/profile/types/profile.types";
-import { GRADIENTS } from "../streamvibe/profile/constants/profile.constants";
 import { gradFromId, humanReadable, initialsOf } from "../streamvibe/profile/utils/format";
 
 

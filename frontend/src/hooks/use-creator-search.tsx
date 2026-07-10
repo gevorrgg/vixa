@@ -61,6 +61,8 @@ export function useCreatorSearch(userId: number | null): UseCreatorSearchResult 
                 const res = await apiFetch<{ users: ApiUserResult[] }>(
                     `/api/users/search?prefix=${encodeURIComponent(query)}&limit=10`,
                 );
+
+                console.log(res.users)
                 if (!cancelled) setSearchResults(res.users);
             } catch (err) {
                 console.error("Failed to search users", err);
