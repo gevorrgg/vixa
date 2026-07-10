@@ -22,6 +22,7 @@ export function useFollowStatus(
         }
 
         if (initialFollowing !== null) {
+            console.log(initialFollowing)
             setFollowing(initialFollowing);
             setLoading(false);
             return;
@@ -62,8 +63,6 @@ export function useFollowStatus(
         setFollowing(next);
 
         try {
-            console.log(following)
-
             await apiFetch(
                 `/api/users/${targetUserId}/${next ? 'follow' : 'unfollow'}`,
                 {
