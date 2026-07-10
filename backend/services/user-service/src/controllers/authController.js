@@ -67,25 +67,37 @@ class AuthController {
 
     static async register(req, res) {
         try {
+            console.log('register 1')
             const { email, username, password } = req.body
+
+            console.log('register 2')
 
             if (!username || !isValidUsername(username))
                 return res.status(400).json({ ok: false, message: "Invalid Username" })
 
+            console.log('register 3')
+
             if (!email || !isValidEmail(email))
                 return res.status(400).json({ ok: false, message: "Invalid Email" })
+
+            console.log('register 4')
 
             if (!password) {
                 return res.status(400).json({ ok: false, message: "Weak password" })
             }
 
+            console.log('register 5')
+
             const serviceResponse = await AuthService.registerUser(email, username, password)
 
             if (!serviceResponse.ok) {
+                console.log('register 7')
                 return res
                     .status(serviceResponse.status)
                     .json({ ok: false, message: serviceResponse.message })
             }
+
+            console.log('register 6')
 
             return res.json({
                 ok: true,
@@ -94,8 +106,8 @@ class AuthController {
                 user: serviceResponse.user
             })
         } catch (error) { 
-            console.error('Something happened')
-            console.error(error)
+            console.log('Something happened')
+            console.log(error)
 
             return res.status(500).json({ok: false})
         }
