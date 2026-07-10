@@ -2,7 +2,7 @@ services:
   video-service:
     build: .
     env_file:
-      - .env
+      - ../env
     ports:
       - "3002:3002"
     restart: unless-stopped
