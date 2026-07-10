@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { apiFetch } from "../../lib/api-client";
-import type { ApiProfile } from "./ProfilePage";
+import type { ApiProfile } from "./profile/types/profile.types";
 
 type Props = {
     userId: number;
