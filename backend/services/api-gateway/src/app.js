@@ -5,6 +5,14 @@ const path = require("path");
 const app = express();
 
 app.use(
+    "/api/auth",
+    createProxyMiddleware({
+        target: process.env.USER_SERVICE_URL,
+        changeOrigin: true,
+    }),
+);
+
+app.use(
     "/api/users",
     createProxyMiddleware({
         target: process.env.USER_SERVICE_URL,
