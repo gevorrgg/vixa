@@ -31,6 +31,7 @@ export function useFollowStatus(
                     `/api/users/${targetUserId}/follow-status`,
                 );
                 if (!cancelled) {
+                    console.log(res.following)
                     setFollowing(res.following); // всегда актуальные данные с сервера
                 }
             } catch (err) {
