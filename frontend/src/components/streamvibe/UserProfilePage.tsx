@@ -38,7 +38,7 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
     const authProfile = useAuthProfile(authUserId);
 
     /* профиль/статистика/видео просматриваемого пользователя — read-only */
-    const { profile, stats, videos } = useViewedUserProfile(viewedUserId);
+    const { profile, stats, videos, adjustFollowersCount } = useViewedUserProfile(viewedUserId);
 
     /* при загрузке страницы узнаём, подписан ли auth-юзер на этого человека */
     const { following, toggleFollow } = useFollowStatus(viewedUserId, initialFollowing);
@@ -70,8 +70,13 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
         navigate({ to: "/auth", replace: true });
     }
 
+
+
     async function handleToggleFollow() {
         const willFollow = !following;
+
+        // оптимистично двигаем счётчик подписчиков в ProfileSidebar
+        adjustFollowersCount(willFollow ? 1 : -1);
 
         try {
             await toggleFollow();
@@ -84,6 +89,9 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
                     : `Unfollowed ${name}`
             );
         } catch (error) {
+            // откатываем счётчик, если сервер отклонил запрос
+            adjustFollowersCount(willFollow ? -1 : 1);
+
             console.error(error);
             showToast("Failed to update follow status");
         }

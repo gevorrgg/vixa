@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "../lib/api-client";
 import type { ApiProfile, ApiStats, ApiVideo } from "../components/streamvibe/profile/types/profile.types";
 
@@ -7,12 +7,10 @@ type UseViewedUserProfileResult = {
     stats: ApiStats;
     videos: ApiVideo[];
     loading: boolean;
+    /** Локально (оптимистично) сдвигает счётчик подписчиков на delta, не дожидаясь рефетча статы. */
+    adjustFollowersCount: (delta: number) => void;
 };
 
-/**
- * Аналог useProfileData, но только для чтения — используется на странице
- * профиля ЧУЖОГО пользователя (/users/:userId), без операций редактирования/удаления.
- */
 export function useViewedUserProfile(targetUserId: number | null): UseViewedUserProfileResult {
     const [profile, setProfile] = useState<ApiProfile | null>(null);
     const [stats, setStats] = useState<ApiStats>({ videosCount: 0, followersCount: 0, totalViews: 0 });
@@ -52,5 +50,12 @@ export function useViewedUserProfile(targetUserId: number | null): UseViewedUser
         };
     }, [targetUserId]);
 
-    return { profile, stats, videos, loading };
+    const adjustFollowersCount = useCallback((delta: number) => {
+        setStats((prev) => ({
+            ...prev,
+            followersCount: Math.max(0, prev.followersCount + delta),
+        }));
+    }, []);
+
+    return { profile, stats, videos, loading, adjustFollowersCount };
 }
