@@ -24,7 +24,7 @@ class UserApiController {
 
         const result = await UserService.searchUsers(prefix, userId, limit)
 
-        return res.status(result.status).json(result)
+        return res.status(result.status).json({ users: result.users })
     }
 
     static async follow (req, res) {

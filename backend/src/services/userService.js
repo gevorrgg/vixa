@@ -82,21 +82,21 @@ class UserService {
 
             const users = await UserDao.searchUsers(prefix.trim(), userId, safeLimit)
 
-            users.forEach(user => ({
+            const result = users.map(user => ({
                 id: user.id,
                 username: user.username,
                 name: user.name,
                 avatarUrl: user.avatar_key
                     ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${user.avatar_key}`
                     : null,
-                followersCounut: user.followersCounut,
+                followersCount: user.followers_count,
                 following: user.following,
             }))
 
             return {
                 status: 200,
                 ok: true,
-                users,
+                users: result,
             }
         } catch (error) {
             console.error(error)
