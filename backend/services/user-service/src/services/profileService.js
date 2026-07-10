@@ -2,7 +2,7 @@ const pool = require('../db/db')
 const ProfileDao = require('../dao/profileDao')
 const UserService = require('../services/userService')
 const { v4 } = require('uuid')
-const { s3 } = require('./s3')
+const { s3 } = require('../storage/s3')
 const { PutObjectCommand } = require('@aws-sdk/client-s3')
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner')
 
