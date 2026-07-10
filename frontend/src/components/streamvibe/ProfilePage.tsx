@@ -48,30 +48,31 @@ export function ProfilePage() {
         navigate({ to: "/auth", replace: true });
     }
 
-  async function handleToggleFollow(targetId: number) {
-    const target = displayedUsers.find((user) => user.id === targetId);
+    async function handleToggleFollow(targetId: number) {
+        console.log('handle')
+        const target = displayedUsers.find((user) => user.id === targetId);
 
-    if (!target) {
-        showToast("User not found");
-        return;
+        if (!target) {
+            showToast("User not found");
+            return;
+        }
+
+        const willFollow = !target.following;
+        const name = target.name ?? target.username ?? "user";
+
+        try {
+            await toggleFollow(targetId);
+
+            showToast(
+                willFollow
+                    ? `Following ${name}!`
+                    : `Unfollowed ${name}`,
+            );
+        } catch (error) {
+            console.error("Failed to update follow status", error);
+            showToast("Failed to update follow status");
+        }
     }
-
-    const willFollow = !target.following;
-    const name = target.name ?? target.username ?? "user";
-
-    try {
-        await toggleFollow(targetId);
-
-        showToast(
-            willFollow
-                ? `Following ${name}!`
-                : `Unfollowed ${name}`,
-        );
-    } catch (error) {
-        console.error("Failed to update follow status", error);
-        showToast("Failed to update follow status");
-    }
-}
 
 
     async function handleDeleteVideo(videoId: number) {
