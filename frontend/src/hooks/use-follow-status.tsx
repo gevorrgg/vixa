@@ -12,7 +12,7 @@ export function useFollowStatus(
     initialFollowing: boolean | null,
 ): UseFollowStatusResult {
     const [following, setFollowing] = useState(initialFollowing ?? false);
-    const [loading, setLoading] = useState(initialFollowing === null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!targetUserId) {
@@ -21,14 +21,7 @@ export function useFollowStatus(
             return;
         }
 
-        if (initialFollowing !== null) {
-            setFollowing(initialFollowing);
-            setLoading(false);
-            return;
-        }
-
         let cancelled = false;
-
         setLoading(true);
 
         async function loadFollowStatus() {
@@ -36,9 +29,8 @@ export function useFollowStatus(
                 const res = await apiFetch<{ following: boolean }>(
                     `/api/users/${targetUserId}/follow-status`,
                 );
-
                 if (!cancelled) {
-                    setFollowing(res.following);
+                    setFollowing(res.following); // всегда актуальные данные с сервера
                 }
             } catch (err) {
                 console.error("Failed to load follow status", err);
@@ -54,7 +46,8 @@ export function useFollowStatus(
         return () => {
             cancelled = true;
         };
-    }, [targetUserId, initialFollowing]);
+    }, [targetUserId]);
+
 
     async function toggleFollow() {
         if (!targetUserId) {
@@ -64,6 +57,7 @@ export function useFollowStatus(
         const next = !following;
 
         setFollowing(next);
+
 
         try {
             await apiFetch(
