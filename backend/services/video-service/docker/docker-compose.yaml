@@ -1,6 +1,11 @@
 services:
-  video-service:
-    build:
+  user-service:
+    build: 
       context: ..
       dockerfile: docker/Dockerfile
     image: docker-video-service
+    env_file:
+      - ../env
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
