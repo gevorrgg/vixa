@@ -3,6 +3,8 @@ const { createProxyMiddleware, fixRequestBody } = require("http-proxy-middleware
 const path = require("path");
 require('dotenv').config()
 
+console.log(process.env)
+
 const app = express();
 
 // Общий обработчик ошибок для прокси, чтобы запросы не висели вечно
