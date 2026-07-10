@@ -66,33 +66,39 @@ class AuthController {
     }
 
     static async register(req, res) {
-        console.log('register')
-        const { email, username, password } = req.body
+        try {
+            const { email, username, password } = req.body
 
-        if (!username || !isValidUsername(username))
-            return res.status(400).json({ ok: false, message: "Invalid Username" })
+            if (!username || !isValidUsername(username))
+                return res.status(400).json({ ok: false, message: "Invalid Username" })
 
-        if (!email || !isValidEmail(email))
-            return res.status(400).json({ ok: false, message: "Invalid Email" })
+            if (!email || !isValidEmail(email))
+                return res.status(400).json({ ok: false, message: "Invalid Email" })
 
-        if (!password) {
-            return res.status(400).json({ ok: false, message: "Weak password" })
+            if (!password) {
+                return res.status(400).json({ ok: false, message: "Weak password" })
+            }
+
+            const serviceResponse = await AuthService.registerUser(email, username, password)
+
+            if (!serviceResponse.ok) {
+                return res
+                    .status(serviceResponse.status)
+                    .json({ ok: false, message: serviceResponse.message })
+            }
+
+            return res.json({
+                ok: true,
+                message: serviceResponse.message,
+                token: serviceResponse.token,
+                user: serviceResponse.user
+            })
+        } catch (error) { 
+            console.error('Something happened')
+            console.error(error)
+
+            return res.status(500).json({ok: false})
         }
-
-        const serviceResponse = await AuthService.registerUser(email, username, password)
-
-        if (!serviceResponse.ok) {
-            return res
-                .status(serviceResponse.status)
-                .json({ ok: false, message: serviceResponse.message })
-        }
-
-        return res.json({
-            ok: true,
-            message: serviceResponse.message,
-            token: serviceResponse.token,
-            user: serviceResponse.user
-        })
     }
 
     static async getMe (req, res) {
