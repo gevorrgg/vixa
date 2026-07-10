@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.get('/:userId/stats', UserApiController.getUserStats)
 router.get('/search', optionalMiddleware, UserApiController.searchUsers)
-router.get('/:userId/follow-state', authMiddleware, UserApiController.followState)
+router.get('/:userId/follow-status', authMiddleware, UserApiController.followState)
 router.post('/:userId/follow', authMiddleware, UserApiController.follow)
 router.delete('/:userId/unfollow', authMiddleware, UserApiController.unfollow)
 
