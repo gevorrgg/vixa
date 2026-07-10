@@ -65,7 +65,8 @@ class AuthController {
         })
     }
 
-    static async register (req, res) {
+    static async register(req, res) {
+        console.log('register')
         const { email, username, password } = req.body
 
         if (!username || !isValidUsername(username))
