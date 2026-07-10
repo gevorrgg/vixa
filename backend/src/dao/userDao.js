@@ -87,7 +87,7 @@ class UserDao {
                 u.username,
                 p.name,
                 p.avatar_key,
-                u.followers_count AS "followersCount",
+                u.followers_count,
                 FALSE AS following
             FROM users u
             LEFT JOIN profiles p
