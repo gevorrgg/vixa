@@ -29,7 +29,8 @@ export function useFollowStatus(
                 const res = await apiFetch<{ following: boolean }>(
                     `/api/users/${targetUserId}/follow-status`,
                 );
-                    setFollowing(res.following); // всегда актуальные данные с сервера
+                console.log(res)
+                setFollowing(res.following); // всегда актуальные данные с сервера
             } catch (err) {
                 console.error("Failed to load follow status", err);
             } finally {
