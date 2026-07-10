@@ -22,6 +22,8 @@ class UserApiController {
         const { prefix, limit } = req.query
         const userId = req.user ? req.user.id : null
 
+        const result = await UserService.searchUsers(prefix, userId, limit)
+
         const response = {
             users: result.users,
         }
