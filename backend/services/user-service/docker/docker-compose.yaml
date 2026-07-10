@@ -1,8 +1,11 @@
 services:
   user-service:
-    build: .
+    build: 
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: docker-user-service
     env_file:
-      - ../env
+      - ../.env
     ports:
-      - "3001:3001"
+      - "8080:8080"
     restart: unless-stopped
