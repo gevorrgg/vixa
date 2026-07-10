@@ -21,6 +21,7 @@ const makeProxy = (targetEnvVar) =>
         // а не один раз при старте сервера (актуально, если .env грузится с задержкой)
         router: () => {
             const target = process.env[targetEnvVar];
+            console.log(target)
             if (!target) {
                 console.error(`${targetEnvVar} is not defined!`);
             }
