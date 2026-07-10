@@ -12,7 +12,7 @@ type CreatorsPanelProps = {
     searchLoading: boolean;
     displayedUsers: ApiUserResult[];
     onToggleFollow: (targetId: number) => void;
-    onOpenUser: (userId: number) => void;
+    onOpenUser: (user: ApiUserResult) => void;
 };
 
 export function CreatorsPanel({
@@ -53,7 +53,7 @@ export function CreatorsPanel({
                                 <div
                                     className="user-avatar"
                                     style={{ background: gradFromId(u.id) }}
-                                    onClick={() => onOpenUser(u.id)}
+                                    onClick={() => onOpenUser(u)}
                                 >
                                     {u.avatarUrl ? <img src={u.avatarUrl} alt="" /> : initialsOf(name)}
                                 </div>

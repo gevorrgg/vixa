@@ -24,9 +24,10 @@ import type { ApiVideo } from "./profile/types/profile.types";
 type UserProfilePageProps = {
     /** id профиля, который открыт — приходит из роута /users/$userId */
     userId: number;
+    initialFollowing: boolean | null;
 };
 
-export function UserProfilePage({ userId: viewedUserId }: UserProfilePageProps) {
+export function UserProfilePage({ userId: viewedUserId, initialFollowing }: UserProfilePageProps) {
     const navigate = useNavigate();
     const { toast, showToast } = useToast();
 
@@ -40,7 +41,7 @@ export function UserProfilePage({ userId: viewedUserId }: UserProfilePageProps) 
     const { profile, stats, videos } = useViewedUserProfile(viewedUserId);
 
     /* при загрузке страницы узнаём, подписан ли auth-юзер на этого человека */
-    const { following, toggleFollow } = useFollowStatus(viewedUserId);
+    const { following, toggleFollow } = useFollowStatus(viewedUserId, initialFollowing);
 
     /* рекомендации всегда авторизованного пользователя и не зависят от открытого профиля */
     const {
