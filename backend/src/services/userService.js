@@ -140,6 +140,26 @@ class UserService {
             return { status: 500, ok: false, message: "Server error" }
         }
     }
+
+    static async followState (targetUserId, currentUserId) {
+        try {
+            const following = await UserDao.followState(targetUserId, currentUserId)
+
+            return {
+                status: 200,
+                ok: true,
+                following,
+            }
+        } catch (error) {
+            console.error(error)
+
+            return {
+                status: 500,
+                ok: false,
+                message: error.message,
+            }
+        }
+    }
 }
 
 module.exports = UserService

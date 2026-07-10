@@ -129,7 +129,7 @@ class UserDao {
         return res.rows
     }
 
-    static async follow(followingId, followerId) { 
+    static async follow (followingId, followerId) {
         const sql = `
             WITH followed AS (
                 INSERT INTO followers(following_id, follower_id)
@@ -148,7 +148,7 @@ class UserDao {
         return !!result.rows[0]
     }
 
-    static async unfollow(followingId, followerId) { 
+    static async unfollow (followingId, followerId) {
         const sql = `
             WITH deleted AS (
                 DELETE FROM followers
@@ -164,6 +164,21 @@ class UserDao {
         const result = await db.query(sql, [followingId, followerId])
 
         return !!result.rows[0]
+    }
+
+    static async followState (followingId, followerId) {
+        const sql = `
+        SELECT EXISTS (
+            SELECT 1
+            FROM followers
+            WHERE following_id = $1
+              AND follower_id = $2
+        ) AS following
+    `
+
+        const result = await db.query(sql, [followingId, followerId])
+
+        return result.rows[0].following
     }
 }
 
