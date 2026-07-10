@@ -130,7 +130,7 @@ class UserService {
             const unfollowed = await UserDao.follow(followingId, followerId)
 
             if (!unfollowed) {
-                return { status: 409, ok: false, message: "User already is unfollowed" }
+                return { status: 404, ok: false, message: "Could not find user" }
             }
 
             return { ok: true }

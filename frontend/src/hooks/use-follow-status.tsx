@@ -62,6 +62,8 @@ export function useFollowStatus(
         setFollowing(next);
 
         try {
+            console.log(following)
+
             await apiFetch(
                 `/api/users/${targetUserId}/${next ? 'follow' : 'unfollow'}`,
                 {
