@@ -9,14 +9,13 @@ RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
-
 # api gateway
 FROM node:22-alpine
 
 WORKDIR /app
 
 COPY backend/services/api-gateway/package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev
 
 COPY backend/services/api-gateway/src ./src
 
