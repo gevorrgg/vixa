@@ -1,7 +1,6 @@
 const UserService = require("../services/userService")
-const VideoService = require("../services/videoService")
 
-class UserApiController {
+class UserController {
     static async getUserStats (req, res) {
         const userId = Number(req.params.userId)
 
@@ -89,4 +88,4 @@ class UserApiController {
     }
 }
 
-module.exports = UserApiController
+module.exports = UserController
