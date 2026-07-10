@@ -1,37 +1,52 @@
 const express = require("express");
-const { createProxyMiddleware, fixRequestBody } = require("http-proxy-middleware");
+const {
+    createProxyMiddleware,
+} = require("http-proxy-middleware");
 const path = require("path");
-require('dotenv').config()
-
-console.log(process.env)
+require("dotenv").config();
 
 const app = express();
 
-// Общий обработчик ошибок для прокси, чтобы запросы не висели вечно
 const onProxyError = (err, req, res) => {
-    console.error(`Proxy error for ${req.method} ${req.originalUrl}:`, err.message);
+    console.error(
+        `Proxy error for ${req.method} ${req.originalUrl}:`,
+        err.message,
+    );
+
     if (!res.headersSent) {
-        res.status(502).json({ error: "Bad gateway", details: err.message });
+        res.status(502).json({
+            ok: false,
+            error: "Bad gateway",
+            details: err.message,
+        });
     }
 };
 
 const makeProxy = (targetEnvVar) =>
     createProxyMiddleware({
-        // router вместо target — читает env-переменную заново на каждый запрос,
-        // а не один раз при старте сервера (актуально, если .env грузится с задержкой)
         router: () => {
             const target = process.env[targetEnvVar];
-            console.log(target)
+
             if (!target) {
-                console.error(`${targetEnvVar} is not defined!`);
+                throw new Error(`${targetEnvVar} is not defined`);
             }
+
             return target;
         },
+
         changeOrigin: true,
         proxyTimeout: 15000,
         timeout: 15000,
+
+        pathRewrite: (path, req) => {
+            console.log(
+                `[proxy] ${req.method} ${req.originalUrl} -> ${process.env[targetEnvVar]}${req.originalUrl}`,
+            );
+
+            return req.originalUrl;
+        },
+
         on: {
-            proxyReq: fixRequestBody, // критично: пере-сериализует body, если express.json() уже распарсил его
             error: onProxyError,
         },
     });
