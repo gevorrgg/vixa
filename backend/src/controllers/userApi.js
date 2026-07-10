@@ -73,6 +73,8 @@ class UserApiController {
         const targetUserId =  req.params.userId
         const currentUserId = req.user.id
 
+        console.log('Hello')
+
         if (Number.isNaN(targetUserId)) {
             return res.status(400).json({ ok: false, message: "Invalid id" })
         }
