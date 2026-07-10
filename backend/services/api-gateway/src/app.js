@@ -1,8 +1,8 @@
-const express = require("express")
-const { createProxyMiddleware } = require("http-proxy-middleware")
+const express = require("express");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 const path = require("path");
 
-const app = express()
+const app = express();
 
 app.use(
     "/api/users",
@@ -10,7 +10,7 @@ app.use(
         target: process.env.USER_SERVICE_URL,
         changeOrigin: true,
     }),
-)
+);
 
 app.use(
     "/api/videos",
@@ -18,15 +18,18 @@ app.use(
         target: process.env.VIDEO_SERVICE_URL,
         changeOrigin: true,
     }),
-)
+);
 
 app.get("/health", (req, res) => {
     res.json({ ok: true });
 });
 
+const distPath = path.join(__dirname, "../dist");
+
+app.use(express.static(distPath));
+
 app.use((req, res) => {
-    res.sendFile(path.join(__dirname, "../dist/index.html"));
-})
+    res.sendFile(path.join(distPath, "index.html"));
+});
 
-
-module.exports = app
+module.exports = app;
