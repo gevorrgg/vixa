@@ -26,6 +26,7 @@ export function useFollowStatus(
 
         async function loadFollowStatus() {
             try {
+                console.log('Heyy')
                 const res = await apiFetch<{ following: boolean }>(
                     `/api/users/${targetUserId}/follow-status`,
                 );
