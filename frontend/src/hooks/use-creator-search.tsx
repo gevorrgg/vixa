@@ -9,7 +9,7 @@ type UseCreatorSearchResult = {
     isSearching: boolean;
     searchLoading: boolean;
     displayedUsers: ApiUserResult[];
-    toggleFollow: (targetId: number) => ApiUserResult | undefined;
+    toggleFollow: (targetId: number) => Promise<ApiUserResult | undefined>;
 };
 
 /**
@@ -81,7 +81,7 @@ export function useCreatorSearch(userId: number | null): UseCreatorSearchResult 
     const isSearching = userSearch.trim().length > 0;
     const displayedUsers = isSearching ? searchResults : recommendations;
 
-    function toggleFollow(targetId: number): ApiUserResult | undefined {
+    async function toggleFollow(targetId: number): Promise<ApiUserResult | undefined> {
         const updater = (list: ApiUserResult[]) =>
             list.map((u) => (u.id === targetId ? { ...u, following: !u.following } : u));
 
@@ -93,7 +93,13 @@ export function useCreatorSearch(userId: number | null): UseCreatorSearchResult 
 
         const source = isSearching ? searchResults : recommendations;
         const target = source.find((u) => u.id === targetId);
-        // TODO: подключить реальный эндпоинт follow/unfollow, когда он появится на бэке
+        
+        const result = await apiFetch<{ok: boolean}>(`/users/${userId}/${target?.following ? 'unfollow' : 'follow'}`)
+
+        if (!result.ok) { 
+            throw new Error('Could not fetch')
+        }
+
         return target;
     }
 

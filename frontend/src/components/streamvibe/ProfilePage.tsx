@@ -49,7 +49,6 @@ export function ProfilePage() {
     }
 
     async function handleToggleFollow(targetId: number) {
-        console.log('handle')
         const target = displayedUsers.find((user) => user.id === targetId);
 
         if (!target) {
