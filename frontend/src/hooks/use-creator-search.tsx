@@ -93,7 +93,7 @@ export function useCreatorSearch(userId: number | null): UseCreatorSearchResult 
         const target = source.find((u) => u.id === targetId);
 
         
-        await apiFetch(`/api/users/${userId}/${target?.following ? 'unfollow' : 'follow'}`, 
+        await apiFetch(`/api/users/${target?.id}/${target?.following ? 'unfollow' : 'follow'}`, 
             {
                 method: target?.following ? 'DELETE' : 'POST'
             }
