@@ -135,15 +135,20 @@ export function ProfilePage() {
                 searchLoading={searchLoading}
                 displayedUsers={displayedUsers}
                 onToggleFollow={handleToggleFollow}
-                onOpenUser={(u) => navigate({
-                    to: `/users/${u.id}`,
-                    params: {
-                        userId: String(u.id)
-                    },
-                    state: {
-                        initialFollowing: u.following
-                    }
-                })}
+                onOpenUser={(u) => {
+                    console.log(u.following)
+
+                    navigate({
+                        to: `/users/${u.id}`,
+                        params: {
+                            userId: String(u.id)
+                        },
+                        state: {
+                            initialFollowing: u.following
+                        }
+                    })
+                }
+                }
             />
 
             <button id="btn-new" onClick={() => setUploadOpen(true)}>
