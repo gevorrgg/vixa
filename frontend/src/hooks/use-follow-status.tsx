@@ -22,7 +22,6 @@ export function useFollowStatus(
         }
 
         if (initialFollowing !== null) {
-            console.log(initialFollowing)
             setFollowing(initialFollowing);
             setLoading(false);
             return;

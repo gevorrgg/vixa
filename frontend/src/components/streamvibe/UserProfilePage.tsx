@@ -88,13 +88,29 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
             showToast("Failed to update follow status");
         }
     }
-    
+
     async function handleToggleRecommendationFollow(targetId: number) {
-        const target = toggleRecommendationFollow(targetId);
-        if (target) {
+        const target = displayedUsers.find((user) => user.id === targetId);
+
+        if (!target) {
+            showToast("User not found");
+            return;
+        }
+
+        const willFollow = !target.following;
+        const name = target.name ?? target.username ?? "user";
+
+        try {
+            await toggleRecommendationFollow(targetId);
+
             showToast(
-                !target.following ? `Following ${target.name ?? target.username}!` : `Unfollowed ${target.name ?? target.username}`,
+                willFollow
+                    ? `Following ${name}!`
+                    : `Unfollowed ${name}`,
             );
+        } catch (error) {
+            console.error("Failed to update follow status", error);
+            showToast("Failed to update follow status");
         }
     }
 
@@ -152,7 +168,17 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
                 searchLoading={searchLoading}
                 displayedUsers={displayedUsers}
                 onToggleFollow={handleToggleRecommendationFollow}
-                onOpenUser={(id) => navigate({ to: `/users/${id}`, params: { userId: String(id) } })}
+                onOpenUser={(user) =>
+                    navigate({
+                        to: "/users/$userId",
+                        params: {
+                            userId: String(user.id),
+                        },
+                        state: {
+                            initialFollowing: user.following,
+                        },
+                    })
+                }
             />
 
             {selectedVideo && (

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { apiFetch, clearAuthSession, getStoredAuthSession } from "../../lib/api-client";
+import { clearAuthSession, getStoredAuthSession } from "../../lib/api-client";
 import { UploadModal } from "./UploadModal";
 import { EditProfileModal } from "./EditProfileModal";
 import { Toast, useToast } from "./Toast";
@@ -46,20 +46,6 @@ export function ProfilePage() {
         clearAuthSession();
         setAuthSession(null);
         navigate({ to: "/auth", replace: true });
-    }
-
-    async function handleToggle(target: ApiUserResult | undefined) {
-        if (!target) {
-            throw new Error("Failed to update follow status")
-        }
-
-        const method = target?.following ? 'DELETE' : 'POST'
-
-        const response = await apiFetch<{ ok: boolean, subscribed: boolean }>(`/api/users/${target.id}/follow`, { method })
-
-        if (!response.ok) {
-            throw new Error("Failed to update follow status");
-        }
     }
 
   async function handleToggleFollow(targetId: number) {
