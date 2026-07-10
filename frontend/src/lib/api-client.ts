@@ -21,7 +21,7 @@ export function getStoredAuthSession(): StoredAuthSession | null {
     if (typeof window === "undefined") return null;
 
     try {
-        const raw = window.localStorage.getItem(AUTH_STORAGE_KEY);
+        const raw = window.sessionStorage.getItem(AUTH_STORAGE_KEY);
         if (!raw) return null;
 
         const parsed = JSON.parse(raw) as Partial<StoredAuthSession>;
@@ -47,11 +47,11 @@ export function setAuthSession(session: StoredAuthSession | null) {
     if (typeof window === "undefined") return;
 
     if (!session?.token) {
-        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+        window.sessionStorage.removeItem(AUTH_STORAGE_KEY);
         return;
     }
 
-    window.localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
+    window.sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(session));
 }
 
 export function clearAuthSession() {
