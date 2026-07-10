@@ -1,0 +1,15 @@
+services:
+  api-gateway:
+    build:
+      context: ../../../..
+      dockerfile: backend/services/api-gateway/docker/Dockerfile
+
+    container_name: api-gateway
+
+    ports:
+      - "8080:8080"
+
+    env_file:
+      - ../.env
+
+    restart: unless-stopped
