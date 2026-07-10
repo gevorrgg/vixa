@@ -163,8 +163,6 @@ class UserDao {
 
         const result = await db.query(sql, [followingId, followerId])
 
-        console.log(result.rows[0])
-
         return !!result.rows[0]
     }
 }

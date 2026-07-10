@@ -127,7 +127,7 @@ class UserService {
 
     static async unfollow (followingId, followerId) {
         try {
-            const unfollowed = await UserDao.follow(followingId, followerId)
+            const unfollowed = await UserDao.unfollow(followingId, followerId)
 
             if (!unfollowed) {
                 return { status: 404, ok: false, message: "Could not find user" }
