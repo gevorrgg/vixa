@@ -136,7 +136,7 @@ export function ProfilePage() {
                 displayedUsers={displayedUsers}
                 onToggleFollow={handleToggleFollow}
                 onOpenUser={(u) => {
-                    console.log(u.following)
+                    console.log(u)
 
                     navigate({
                         to: `/users/${u.id}`,
