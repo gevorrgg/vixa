@@ -3,8 +3,7 @@ CREATE TABLE categories (
     name TEXT UNIQUE NOT NULL
 );
 
-INSERT INTO
-    categories(name)
+INSERT INTO categories(name)
 VALUES
     ('Music'),
     ('Gaming'),
@@ -17,10 +16,9 @@ VALUES
     ('Kids'),
     ('News');
 
-
 CREATE TABLE videos (
     id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id),
+    user_id INT NOT NULL,
     category_id INT REFERENCES categories(id) ON DELETE SET NULL,
     title TEXT NOT NULL,
     description TEXT,
