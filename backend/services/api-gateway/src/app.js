@@ -4,29 +4,43 @@ const path = require("path");
 
 const app = express();
 
-app.use(
-    "/api/auth",
-    createProxyMiddleware({
-        target: process.env.USER_SERVICE_URL,
-        changeOrigin: true,
-    }),
-);
+const apiProxy = createProxyMiddleware({
+    changeOrigin: true,
 
-app.use(
-    "/api/users",
-    createProxyMiddleware({
-        target: process.env.USER_SERVICE_URL,
-        changeOrigin: true,
-    }),
-);
+    router(req) {
+        if (req.originalUrl.startsWith("/api/videos")) {
+            return process.env.VIDEO_SERVICE_URL;
+        }
 
-app.use(
-    "/api/videos",
-    createProxyMiddleware({
-        target: process.env.VIDEO_SERVICE_URL,
-        changeOrigin: true,
-    }),
-);
+        return process.env.USER_SERVICE_URL;
+    },
+
+    pathRewrite(path, req) {
+        return req.originalUrl;
+    },
+
+    on: {
+        proxyReq(proxyReq, req) {
+            console.log(
+                `[proxy] ${req.method} ${req.originalUrl} -> ${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`
+            );
+        },
+
+        error(error, req, res) {
+            console.error("[proxy error]", error.message);
+
+            if (!res.headersSent) {
+                res.status(502).json({
+                    ok: false,
+                    message: "Service unavailable",
+                    error: error.message,
+                });
+            }
+        },
+    },
+});
+
+app.use("/api", apiProxy);
 
 app.get("/health", (req, res) => {
     res.json({ ok: true });
