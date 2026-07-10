@@ -19,4 +19,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: "../backend/services/api-gateway/src",
+    emptyOutDir: false,
+  },
 });
