@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api-client";
 import type { ApiUserResult } from "../components/streamvibe/profile/types/profile.types";
-
 
 type UseCreatorSearchResult = {
     userSearch: string;
@@ -12,38 +11,40 @@ type UseCreatorSearchResult = {
     toggleFollow: (targetId: number) => Promise<ApiUserResult | undefined>;
 };
 
-/**
- * Управляет блоком "Find Creators": рекомендации, когда поле поиска пустое,
- * и live-поиск (debounce 300ms), когда пользователь что-то вводит.
- * toggleFollow — пока чисто оптимистичный (без реального API), как и в оригинале.
- */
-export function useCreatorSearch(userId: number | null): UseCreatorSearchResult {
+export function useCreatorSearch(
+    userId: number | null,
+): UseCreatorSearchResult {
     const [userSearch, setUserSearch] = useState("");
     const [recommendations, setRecommendations] = useState<ApiUserResult[]>([]);
     const [searchResults, setSearchResults] = useState<ApiUserResult[]>([]);
     const [searchLoading, setSearchLoading] = useState(false);
 
-    /* рекомендации грузим один раз, когда известен userId */
     useEffect(() => {
         if (!userId) return;
 
         let cancelled = false;
 
-        (async () => {
+        async function loadRecommendations() {
             try {
-                const res = await apiFetch<{ users: ApiUserResult[] }>(`/api/users/${userId}/recommendations`);
-                if (!cancelled) setRecommendations(res.users);
-            } catch (err) {
-                console.error("Failed to load recommendations", err);
+                const res = await apiFetch<{ users: ApiUserResult[] }>(
+                    `/api/users/${userId}/recommendations`,
+                );
+
+                if (!cancelled) {
+                    setRecommendations(res.users);
+                }
+            } catch (error) {
+                console.error("Failed to load recommendations", error);
             }
-        })();
+        }
+
+        loadRecommendations();
 
         return () => {
             cancelled = true;
         };
     }, [userId]);
 
-    /* live-поиск с debounce */
     useEffect(() => {
         const query = userSearch.trim();
 
@@ -53,53 +54,106 @@ export function useCreatorSearch(userId: number | null): UseCreatorSearchResult 
             return;
         }
 
-        setSearchLoading(true);
         let cancelled = false;
 
-        const timeoutId = setTimeout(async () => {
+        setSearchLoading(true);
+
+        const timeoutId = window.setTimeout(async () => {
             try {
                 const res = await apiFetch<{ users: ApiUserResult[] }>(
                     `/api/users/search?prefix=${encodeURIComponent(query)}&limit=10`,
                 );
-                if (!cancelled) setSearchResults(res.users);
-            } catch (err) {
-                console.error("Failed to search users", err);
-                if (!cancelled) setSearchResults([]);
+
+                if (!cancelled) {
+                    setSearchResults(res.users);
+                }
+            } catch (error) {
+                console.error("Failed to search users", error);
+
+                if (!cancelled) {
+                    setSearchResults([]);
+                }
             } finally {
-                if (!cancelled) setSearchLoading(false);
+                if (!cancelled) {
+                    setSearchLoading(false);
+                }
             }
         }, 300);
 
         return () => {
             cancelled = true;
-            clearTimeout(timeoutId);
+            window.clearTimeout(timeoutId);
         };
     }, [userSearch]);
 
     const isSearching = userSearch.trim().length > 0;
-    const displayedUsers = isSearching ? searchResults : recommendations;
 
-    async function toggleFollow(targetId: number): Promise<ApiUserResult | undefined> {
-        const updater = (list: ApiUserResult[]) =>
-            list.map((u) => (u.id === targetId ? { ...u, following: !u.following } : u));
+    const displayedUsers = isSearching
+        ? searchResults
+        : recommendations;
 
-        if (isSearching) {
-            setSearchResults(updater);
-        } else {
-            setRecommendations(updater);
+    async function toggleFollow(
+        targetId: number,
+    ): Promise<ApiUserResult | undefined> {
+        const source = isSearching
+            ? searchResults
+            : recommendations;
+
+        const target = source.find((user) => user.id === targetId);
+
+        if (!target) {
+            console.error(`User with id ${targetId} was not found`);
+            return undefined;
         }
 
-        const source = isSearching ? searchResults : recommendations;
-        const target = source.find((u) => u.id === targetId);
+        const nextFollowing = !target.following;
 
-        
-        await apiFetch(`/api/users/${target?.id}/${target?.following ? 'unfollow' : 'follow'}`, 
-            {
-                method: target?.following ? 'DELETE' : 'POST'
-            }
-        )
+        const updateUser = (users: ApiUserResult[]) =>
+            users.map((user) =>
+                user.id === targetId
+                    ? {
+                          ...user,
+                          following: nextFollowing,
+                          followers:
+                              user.followers +
+                              (nextFollowing ? 1 : -1),
+                      }
+                    : user,
+            );
 
-        return target;
+        const rollbackUser = (users: ApiUserResult[]) =>
+            users.map((user) =>
+                user.id === targetId ? target : user,
+            );
+
+        // Обновляем оба списка, потому что один пользователь
+        // может одновременно находиться в рекомендациях и поиске.
+        setRecommendations(updateUser);
+        setSearchResults(updateUser);
+
+        try {
+            await apiFetch(
+                `/api/users/${targetId}/${nextFollowing ? "follow" : "unfollow"}`,
+                {
+                    method: nextFollowing ? "POST" : "DELETE",
+                },
+            );
+
+            return {
+                ...target,
+                following: nextFollowing,
+                followers:
+                    target.followers +
+                    (nextFollowing ? 1 : -1),
+            };
+        } catch (error) {
+            // Откатываем оптимистичное изменение при ошибке сервера.
+            setRecommendations(rollbackUser);
+            setSearchResults(rollbackUser);
+
+            console.error("Failed to toggle follow status", error);
+            return undefined;
+        }
     }
 
     return {
