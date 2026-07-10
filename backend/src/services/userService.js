@@ -93,6 +93,8 @@ class UserService {
                 following: user.following,
             }))
 
+            console.log(result)
+
             return {
                 status: 200,
                 ok: true,
