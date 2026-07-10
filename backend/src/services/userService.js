@@ -82,6 +82,8 @@ class UserService {
 
             const users = await UserDao.searchUsers(prefix.trim(), userId, safeLimit)
 
+            console.log(users)
+
             const result = users.map(user => ({
                 id: user.id,
                 username: user.username,
