@@ -108,7 +108,7 @@ class UserDao {
             u.username,
             p.name,
             p.avatar_key,
-            u.followers_count AS "followersCount",
+            u.followers_count,
             EXISTS (
                 SELECT 1
                 FROM followers f
