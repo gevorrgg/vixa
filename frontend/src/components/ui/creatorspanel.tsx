@@ -59,7 +59,7 @@ export function CreatorsPanel({
                                 <div className="user-meta">
                                     <div className="user-name">{name}</div>
                                     <div className="user-sub">
-                                        @{u.username} · {humanReadable(u.followersCount)} subs
+                                        @{u.username} · {humanReadable(u.followers)} subs
                                     </div>
                                 </div>
                                 <SubscribeButton subscribed={u.following} onToggle={async () => await onToggleFollow(u.id)} size="sm" />

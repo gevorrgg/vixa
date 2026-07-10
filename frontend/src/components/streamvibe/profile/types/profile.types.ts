@@ -35,6 +35,6 @@ export type ApiUserResult = {
     username: string;
     name: string | null;
     avatarUrl: string | null;
-    followersCount: number;
+    followers: number;
     following: boolean;
 };
