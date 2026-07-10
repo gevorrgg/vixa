@@ -1,4 +1,4 @@
-const pool = require('../dao/db')
+const pool = require('../db/db')
 const ProfileDao = require('../dao/profileDao')
 const UserService = require('../services/userService')
 const { v4 } = require('uuid')

@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const pool = require("../dao/db")
+const pool = require("../db/db")
 const UserDao = require("../dao/userDao")
 const VideoClient = require("../clients/videoServiceClient")
 
