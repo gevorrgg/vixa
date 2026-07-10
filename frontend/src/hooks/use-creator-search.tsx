@@ -94,9 +94,7 @@ export function useCreatorSearch(userId: number | null): UseCreatorSearchResult 
         const source = isSearching ? searchResults : recommendations;
         const target = source.find((u) => u.id === targetId);
         
-        const result = await apiFetch(`/users/${userId}/${target?.following ? 'unfollow' : 'follow'}`)
-        
-        console.log(result)
+        await apiFetch(`/users/${userId}/${target?.following ? 'unfollow' : 'follow'}`)
 
         return target;
     }

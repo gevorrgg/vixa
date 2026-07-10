@@ -31,6 +31,8 @@ export function UserProfilePage({ userId: viewedUserId, initialFollowing }: User
     const navigate = useNavigate();
     const { toast, showToast } = useToast();
 
+    console.log(initialFollowing)
+
     const [authSession, setAuthSession] = useState(() => getStoredAuthSession());
     const authUserId = useCurrentUserId();
 
