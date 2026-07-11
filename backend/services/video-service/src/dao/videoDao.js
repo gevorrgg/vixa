@@ -108,6 +108,8 @@ class VideoDao {
             [userId],
         )
 
+        console.log(result.rows[0])
+
         return Number(result.rows[0].totalviews)
     }
 
