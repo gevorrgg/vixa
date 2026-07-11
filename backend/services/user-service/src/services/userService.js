@@ -58,13 +58,13 @@ class UserService {
     }
 
     static async getUserStats (userId) {
-        const followersCount = UserService.getFollowersCount(userId)
+        const followersCount = await UserService.getFollowersCount(userId)
 
         if (followersCount === null) {
             return { status: 404, ok: false, message: "Could not find user" }
         }
 
-        const totalViewsCount = VideoClient.getTotalViews(userId)
+        const totalViewsCount = await VideoClient.getTotalViews(userId)
 
         if (totalViewsCount === null) {
             return { status: 404, ok: false, message: "Could not find user" }
