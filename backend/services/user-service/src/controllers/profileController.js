@@ -13,7 +13,7 @@ class ProfileController {
 
         const userInfo = await UserService.getUserInfo(userId)
 
-        if (userInfo == null)
+        if (userInfo === null)
             return res
                 .status(404)
                 .json({ ok: false, message: 'User not found' })
