@@ -5,7 +5,7 @@ class ProfileController {
     static async getProfile (req, res) {
         const userId = req.params.userId
 
-        console.log(req)
+        console.log(req.params)
 
         if (Number.isNaN(userId)) {
             return res
