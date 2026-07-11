@@ -1,7 +1,15 @@
 const db = require("../db/db")
+const { redisClient } = require("../redis/redis")
 
 class UserDao {
-    static async getUserInfo(userId) {
+    static async getUserInfo (userId) {
+        const cacheKey = `user:${userId}:userInfo`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) {
+            return JSON.parse(cached)
+        }
 
         const result = await db.query(
             `SELECT 
@@ -28,6 +36,10 @@ class UserDao {
 
         if (!row) return null
 
+        await redisClient.set(cacheKey, JSON.stringify(row), {
+            EX: 300
+        })
+
         return row
     }
 
@@ -36,9 +48,19 @@ class UserDao {
             newUsername,
             userId,
         ])
+
+        await redisClient.del(`user:${userId}:userInfo`)
     }
 
-    static async getUserIdByEmail (email) {
+    static async getUserIdByEmail(email) {
+        const cacheKey = `userEmail:${email}:userId`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) {
+            return Number(cached)
+        }
+        
         const queryResult = await db.query(
             `
             SELECT id FROM users WHERE email = $1`,
@@ -47,28 +69,61 @@ class UserDao {
 
         if (queryResult.rows.length === 0) return null
 
-        return queryResult.rows[0].id
+        const userId = queryResult.rows[0].id
+
+        await redisClient.set(cacheKey, userId, {
+            EX: 300
+        })
+
+        return Number(userId)
     }
 
-    static async getUserIdByUsername (username) {
+    static async getUserIdByUsername(username) {
+        const cacheKey = `username:${username}:userId`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) {
+            return Number(cached)
+        }
+        
         const queryResult = await db.query(`SELECT id AS id FROM users WHERE username = $1 `, [
             username,
         ])
 
         if (queryResult.rows.length === 0) return null
 
-        return queryResult.rows[0].id
+        const userId = queryResult.rows[0].id
+
+        await redisClient.set(cacheKey, userId, {
+            EX: 300
+        })
+
+        return Number(userId)
     }
 
-    static async getFollowersCount (userId) {
+    static async getFollowersCount(userId) {
+        const cacheKey = `user:${userId}:followersCount`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) {
+            return Number(cached)
+        }
+        
         const result = await db.query(
             `SELECT COUNT(*) AS followersCount FROM followers WHERE following_id = $1`,
             [userId],
         )
 
-        return Number(result.rows[0].followerscount)
-    }
+        const followersCount = result.rows[0].followerscount
 
+        await redisClient.set(cacheKey, followersCount, {
+            EX: 300
+        })
+
+        return Number(followersCount)
+    }
 
     static async searchUsers (prefix, userId, limit) {
         if (userId == null) {
@@ -157,7 +212,8 @@ class UserDao {
         return !!result.rows[0]
     }
 
-    static async followState (followingId, followerId) {
+    static async followState(followingId, followerId) {
+        
         const sql = `
         SELECT EXISTS (
             SELECT 1

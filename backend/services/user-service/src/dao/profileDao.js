@@ -1,5 +1,6 @@
 const QueryBuilder = require('../db/queryBuilder')
 const db = require('../db/db')
+const { redisClient } = require('../redis/redis')
 
 const fieldMap = {
     userId: 'user_id',
@@ -20,6 +21,8 @@ class ProfileDao {
         const params = Object.entries(profile).map(([_, value]) => value)
 
         await db.query(sql, params)
+
+        await redisClient.del(`user:${profile.userId}:hasProfile`)
     }
 
     static async update (profile, userId) {
@@ -31,7 +34,15 @@ class ProfileDao {
         await db.query(sql, values)
     }
 
-    static async hasUserProfile (userId) {
+    static async hasUserProfile(userId) {
+        const cacheKey = `user:${userId}:hasProfile`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) { 
+            return cached
+        }
+
         const result = await db.query(
             `SELECT EXISTS (
             SELECT 1
@@ -41,10 +52,24 @@ class ProfileDao {
             [userId]
         )
 
-        return result.rows[0].exists
+        const hasProfile = result.rows[0].exists
+
+        await redisClient.set(cacheKey, String(hasProfile), {
+            EX: 300
+        })
+
+        return hasProfile
     }
 
-    static async getAvatarKey (userId) {
+    static async getAvatarKey(userId) {
+        const cacheKey = `user:${userId}:avatarKey`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) { 
+            return cached
+        }
+    
         const result = await db.query(
             `SELECT avatar_key
             FROM profiles
@@ -52,7 +77,17 @@ class ProfileDao {
             [userId]
         )
 
-        return result.rows[0]?.avatar_key || null
+        const avatarKey = result.rows[0]?.avatar_key || null
+
+        if (!avatarKey) {
+            return null
+        }
+
+        await redisClient.set(cacheKey, avatarKey, {
+            EX: 300
+        })
+
+        return avatarKey
     }
 
     static async updateAvatarKey(userId, avatarKey) {
@@ -60,6 +95,12 @@ class ProfileDao {
         const values = [avatarKey, userId]
 
         await db.query(sql, values)
+
+        const cacheKey = `user:${userId}:avatarKey`
+        await redisClient.set(cacheKey, avatarKey, {
+            EX: 300
+        })
+
     }
 }
 
