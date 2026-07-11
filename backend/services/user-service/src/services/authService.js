@@ -43,7 +43,6 @@ class AuthService {
 
     static async registerUser (email, username, password) {
         try {
-            console.log9('SERVICE 1')
             const saltRounds = 10
             const passwordHash = await bcrypt.hash(password, saltRounds)
             console.log9('SERVICE 2')
@@ -63,6 +62,7 @@ class AuthService {
                 },
             }
         } catch (error) {
+            console.log(error)
             return this.#handleDbError(error)
         }
     }

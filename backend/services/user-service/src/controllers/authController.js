@@ -69,7 +69,6 @@ class AuthController {
         try {
             const { email, username, password } = req.body
 
-
             if (!username || !isValidUsername(username))
                 return res.status(400).json({ ok: false, message: "Invalid Username" })
 
