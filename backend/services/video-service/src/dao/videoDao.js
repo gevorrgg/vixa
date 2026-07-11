@@ -125,7 +125,7 @@ class VideoDao {
         `
 
         const res = await db.query(sql, [userId, videoId])
-        const liked = res.row.length > 0
+        const liked = res.rows.length > 0
 
         if (!liked) { 
             return false
