@@ -9,9 +9,6 @@ const pool = new Pool ({
     port: process.env.DB_PORT,
 })
 
-const result = await pool.query('SELECT * FROM users')
-
-console.log(result)
 
 module.exports = pool
 
