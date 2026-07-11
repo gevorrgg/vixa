@@ -24,7 +24,7 @@ class ProfileDao {
 
         await Promise.all([
             redisClient.del(`user:${profile.userId}:hasProfile`),
-            redisClient.del(`del:${profile.userId}:userInfo`),
+            redisClient.del(`user:${profile.userId}:userInfo`),
         ])
     }
 
