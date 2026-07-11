@@ -1,4 +1,3 @@
-const { cache } = require("react")
 const db = require("../db/db")
 const { redisClient } = require("../redis/redis.js")
 
