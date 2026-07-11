@@ -8,7 +8,7 @@ class UserService {
     static async getUserInfo (userId) {
         const userInfo = await UserDao.getUserInfo(userId)
 
-        console.log(userId)
+        console.log(`userId = ${userId}`)
 
         if (!userInfo) return null
 
