@@ -8,6 +8,8 @@ class UserService {
     static async getUserInfo (userId) {
         const userInfo = await UserDao.getUserInfo(userId)
 
+        console.log(userInfo)
+
         if (!userInfo) return null
 
         const avatarUrl = userInfo.avatar_key

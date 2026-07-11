@@ -25,6 +25,8 @@ class UserDao {
 
         const row = result.rows[0]
 
+        console.log(row)
+
         if (!row) return null
 
         return row
