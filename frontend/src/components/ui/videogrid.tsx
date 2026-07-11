@@ -27,31 +27,60 @@ export function VideoGrid({ videos, onDelete, onOpenVideo, showActions = true }:
 
     return (
         <div className="video-grid">
+
             {videos.map((v) => {
-                const tag = TAGS[v.category] ?? TAGS.other;
+                const categoryKey = v.category?.trim().toLowerCase();
+
+                const tag = TAGS[categoryKey] ?? {
+                    label: v.category || "Other",
+                    cls: "tag-gray",
+                };
+
                 const thumbStyle = v.thumbnailUrl
-                    ? { backgroundImage: `url('${v.thumbnailUrl}')`, backgroundSize: "cover", backgroundPosition: "center" }
-                    : { background: GRADIENTS[v.grad % GRADIENTS.length] };
+                    ? {
+                        backgroundImage: `url('${v.thumbnailUrl}')`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                    }
+                    : {
+                        background: GRADIENTS[v.grad % GRADIENTS.length],
+                    };
 
                 return (
                     <div className="video-card" key={v.id}>
-                        <div className="video-thumb" style={thumbStyle} onClick={() => onOpenVideo(v)}>
-                            {!v.thumbnailUrl && <span className="video-emoji">{v.emoji}</span>}
+                        <div
+                            className="video-thumb"
+                            style={thumbStyle}
+                            onClick={() => onOpenVideo(v)}
+                        >
+                            {!v.thumbnailUrl && (
+                                <span className="video-emoji">{v.emoji}</span>
+                            )}
                             <span className="play-btn">▶</span>
                             <span className="video-duration">{v.duration}</span>
                         </div>
+
                         <div className="video-info">
-                            <div className={`video-tag ${tag.cls}`}>{tag.label}</div>
+                            <div className={`video-tag ${tag.cls}`}>
+                                {tag.label}
+                            </div>
+
                             <h4 className="video-title">{v.title}</h4>
+
                             <div className="video-meta-row">
                                 <div className="video-meta">
                                     <span>{v.views}</span>
                                     <span>{v.date}</span>
                                 </div>
+
                                 {showActions && (
                                     <VideoCardMenu
                                         isOpen={openMenuId === v.id}
-                                        onToggle={() => setOpenMenuId((cur) => (cur === v.id ? null : v.id))}
+                                        onToggle={() =>
+                                            setOpenMenuId((cur) =>
+                                                cur === v.id ? null : v.id
+                                            )
+                                        }
                                         onClose={() => setOpenMenuId(null)}
                                         onEdit={() => {
                                             setOpenMenuId(null);
