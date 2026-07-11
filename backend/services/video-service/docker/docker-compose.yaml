@@ -9,3 +9,9 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"

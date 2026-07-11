@@ -1,12 +1,24 @@
+const { cache } = require("react")
 const db = require("../db/db")
+const { redisClient } = require("../redis/redis.js")
 
 class VideoDao {
     static async getUserVideos (userId) {
+
+        const cacheKey = `user:${userId}:videos`
+        const cachedVideos = await redisClient.get(cacheKey)
+
+        if (cachedVideos !== null) { 
+            return JSON.parce(cachedVideos)
+        }
+
         const result = await db.query(`SELECT * FROM videos WHERE user_id = $1`, [userId])
 
         const videos = result.rows
 
-        if (!videos) return null
+        await redisClient.set(cacheKey, JSON.stringify(videos), {
+            EX: 60,
+        })
 
         return videos
     }
@@ -22,11 +34,25 @@ class VideoDao {
     }
 
     static async getVideosCount (userId) {
+        const cacheKey = `user:${userId}:videoCount`
+
+        const cachedVideosCount = await redisClient.get(cacheKey)
+
+        if (cachedVideosCount !== null) {
+            return Number(cachedVideosCount)
+        }
+
         const result = await db.query(`SELECT COUNT(*) AS count FROM videos WHERE user_id = $1`, [
             userId,
         ])
 
-        return Number(result.rows[0].count)
+        const videosCount = Number(result.rows[0].count)
+
+        await redisClient.set(cacheKey, videosCount, {
+            EX: 60,
+        })
+
+        return videosCount
     }
 
     static async deleteVideoById (videoId, userId) {
@@ -112,10 +138,7 @@ class VideoDao {
     }
 
     static async getVideoById (videoId) {
-        const result = await db.query(
-            `SELECT * FROM videos WHERE id = $1`,
-            [videoId],
-        )
+        const result = await db.query(`SELECT * FROM videos WHERE id = $1`, [videoId])
 
         return result.rows[0] || null
     }
