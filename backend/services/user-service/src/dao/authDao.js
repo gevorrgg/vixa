@@ -46,7 +46,7 @@ class AuthDao {
     static async getUserByUsername (username) {
         const cacheKey = `user:${username}`
 
-        const cachedUser = await redisClient.get(cachKey)
+        const cachedUser = await redisClient.get(cacheKey)
 
         if (cachedUser !== null) {
             return JSON.parse(cachedUser)
