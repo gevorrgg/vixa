@@ -22,8 +22,14 @@ export const TAGS: Record<string, { label: string; cls: string }> = {
 
 export const FILTER_CHIPS: [string, string][] = [
     ["all", "All"],
-    ["tutorial", "Tutorials"],
-    ["vlog", "Vlogs"],
     ["music", "Music"],
     ["gaming", "Gaming"],
+    ["education", "Education"],
+    ["sports", "Sports"],
+    ["tech", "Tech"],
+    ["entertainment", "Entertainment"],
+    ["vlog", "Vlog"],
+    ["social", "Social"],
+    ["kids", "Kids"],
+    ["news", "News"],
 ];
