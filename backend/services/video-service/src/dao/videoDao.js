@@ -3,11 +3,10 @@ const { redisClient } = require("../redis/redis.js")
 
 class VideoDao {
     static async getUserVideos (userId) {
-
         const cacheKey = `user:${userId}:videos`
         const cachedVideos = await redisClient.get(cacheKey)
 
-        if (cachedVideos !== null) { 
+        if (cachedVideos !== null) {
             return JSON.parse(cachedVideos)
         }
 
@@ -16,7 +15,7 @@ class VideoDao {
         const videos = result.rows
 
         await redisClient.set(cacheKey, JSON.stringify(videos), {
-            EX: 60,
+            EX: 300,
         })
 
         return videos
@@ -30,6 +29,11 @@ class VideoDao {
             VALUES ($1, $2, (SELECT id FROM categories WHERE name = $3), $4, $5, $6, $7) RETURNING *`,
             [userId, title, category, description, contentKey, thumbnailKey, duration],
         )
+
+        await Promise.all([
+            redisClient.del(`user:${userId}:videos`),
+            redisClient.del(`user:${userId}:videoCount`),
+        ])
     }
 
     static async getVideosCount (userId) {
@@ -48,7 +52,7 @@ class VideoDao {
         const videosCount = Number(result.rows[0].count)
 
         await redisClient.set(cacheKey, videosCount, {
-            EX: 60,
+            EX: 300,
         })
 
         return videosCount
@@ -67,6 +71,11 @@ class VideoDao {
             return null
         }
 
+        await Promise.all([
+            redisClient.del(`user:${userId}:videos`),
+            redisClient.del(`user:${userId}:videoCount`),
+        ])
+
         return {
             contentKey: deletedVideo.content_key,
             thumbnailKey: deletedVideo.thumbnail_key,
@@ -74,6 +83,14 @@ class VideoDao {
     }
 
     static async isVideoLikedByUser (videoId, userId) {
+        const cacheKey = `user:${userId}:video:${videoId}:likes`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) {
+            return cached === "true"
+        }
+
         const sql = `
         SELECT EXISTS(
             SELECT 1
@@ -84,8 +101,13 @@ class VideoDao {
     `
 
         const res = await db.query(sql, [videoId, userId])
+        const liked = !!res.rows[0].liked
 
-        return res.rows[0].liked
+        await redisClient.set(cacheKey, liked, {
+            EX: 300,
+        })
+
+        return liked
     }
 
     static async likeVideo (videoId, userId) {
@@ -103,8 +125,18 @@ class VideoDao {
         `
 
         const res = await db.query(sql, [userId, videoId])
+        const liked = res.row.length > 0
 
-        return !!res.rows[0]
+        if (!liked) { 
+            return false
+        }
+
+        const cacheKey = `user:${userId}:video:${videoId}:likes`
+        await redisClient.set(cacheKey, 'true', {
+            EX: 300,
+        })
+        
+        return true
     }
 
     static async deleteLike (videoId, userId) {
@@ -121,11 +153,28 @@ class VideoDao {
         `
 
         const res = await db.query(sql, [userId, videoId])
+        const removedLike = res.rows.length > 0
 
-        return !!res.rows[0]
+        if (!removedLike) { 
+            return false
+        }
+
+        const cacheKey = `user:${userId}:video:${videoId}:likes`
+
+        await redisClient.del(cachKey)
+
+        return true
     }
 
-    static async getTotalViews (userId) {
+    static async getTotalViews(userId) {
+        const cacheKey = `user:${userId}:totalViews`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) { 
+            return Number(cached)
+        }
+
         const result = await db.query(
             `SELECT COUNT(video_id) AS totalViews 
         FROM views 
@@ -133,13 +182,37 @@ class VideoDao {
             [userId],
         )
 
-        return Number(result.rows[0].totalviews)
+        const totalViews = Number(result.rows[0].totalviews)
+
+        await redisClient.set(cacheKey, totalViews, {
+            EX: 300
+        })
+
+        return totalViews
     }
 
-    static async getVideoById (videoId) {
+    static async getVideoById(videoId) {
+        const cacheKey = `video:${videoId}`
+
+        const cached = await redisClient.get(cacheKey)
+
+        if (cached !== null) { 
+            return JSON.parse(cached)
+        }
+
         const result = await db.query(`SELECT * FROM videos WHERE id = $1`, [videoId])
 
-        return result.rows[0] || null
+        const video = result.rows[0] || null
+
+        if (!video) {
+            return null
+        }
+
+        await redisClient.set(cacheKey, JSON.stringify(video), {
+            EX: 300
+        })
+
+        return video
     }
 }
 
