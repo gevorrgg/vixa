@@ -77,6 +77,7 @@ class UserService {
         }
 
         return {
+            status: 200,
             ok: true,
             stats: {
                 totalViews: totalViewsCount,
