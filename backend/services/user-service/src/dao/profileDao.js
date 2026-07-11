@@ -38,6 +38,8 @@ class ProfileDao {
 
         await db.query(sql, values)
 
+         console.log(`user:${profile.userId}`)
+
         await Promise.all([
             redisClient.del(`user:${profile.userId}:hasProfile`),
             redisClient.del(`user:${profile.userId}:userInfo`),
