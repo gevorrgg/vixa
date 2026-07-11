@@ -135,7 +135,8 @@ class VideoDao {
         await redisClient.set(cacheKey, 'true', {
             EX: 300,
         })
-        
+        await redisClient.del(`user:${userId}:videos`)
+
         return true
     }
 
@@ -161,7 +162,11 @@ class VideoDao {
 
         const cacheKey = `user:${userId}:video:${videoId}:likes`
 
-        await redisClient.del(cacheKey)
+        await Promise.all([
+            redisClient.del(cacheKey),
+            redisClient.del(`user:${userId}:videos`)
+        ])
+
 
         return true
     }
@@ -192,25 +197,9 @@ class VideoDao {
     }
 
     static async getVideoById(videoId) {
-        const cacheKey = `video:${videoId}`
-
-        const cached = await redisClient.get(cacheKey)
-
-        if (cached !== null) { 
-            return JSON.parse(cached)
-        }
-
         const result = await db.query(`SELECT * FROM videos WHERE id = $1`, [videoId])
 
         const video = result.rows[0] || null
-
-        if (!video) {
-            return null
-        }
-
-        await redisClient.set(cacheKey, JSON.stringify(video), {
-            EX: 300
-        })
 
         return video
     }
