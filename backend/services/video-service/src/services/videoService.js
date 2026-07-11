@@ -147,8 +147,6 @@ class VideoService {
         try {
             const likeStatus = await VideoDao.deleteLike(videoId, userId)
 
-            console.log(likeStatus)
-
             if (!likeStatus) {
                 return {
                     status: 404,
