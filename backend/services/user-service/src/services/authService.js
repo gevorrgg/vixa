@@ -45,13 +45,10 @@ class AuthService {
         try {
             const saltRounds = 10
             const passwordHash = await bcrypt.hash(password, saltRounds)
-            console.log('SERVICE 2')
 
             const userId = await AuthDao.createUser(email, username, passwordHash)
-            console.log('SERVICE 3')
 
             const jwtToken = generateJwtToken({ id: userId })
-            console.log('SERVICE 4')
 
             return {
                 status: 200,
