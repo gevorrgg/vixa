@@ -161,7 +161,7 @@ class VideoDao {
 
         const cacheKey = `user:${userId}:video:${videoId}:likes`
 
-        await redisClient.del(cachKey)
+        await redisClient.del(cacheKey)
 
         return true
     }
