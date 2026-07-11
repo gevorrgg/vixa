@@ -66,7 +66,7 @@ class UserService {
 
         const totalViewsCount = VideoClient.getTotalViews(userId)
 
-        if (totalViews === null) {
+        if (totalViewsCount === null) {
             return { status: 404, ok: false, message: "Could not find user" }
         }
 
