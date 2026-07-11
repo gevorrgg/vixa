@@ -31,7 +31,7 @@ export function useViewedUserProfile(targetUserId: number | null): UseViewedUser
                 const [p, s, v] = await Promise.all([
                     apiFetch<ApiProfile>(`/api/users/${targetUserId}/profile`),
                     apiFetch<ApiStats>(`/api/users/${targetUserId}/stats`),
-                    apiFetch<{ videos: ApiVideo[] }>(`/api/users/${targetUserId}/videos`),
+                    apiFetch<{ videos: ApiVideo[] }>(`/api/videos/${targetUserId}`),
                 ]);
                 if (!cancelled) {
                     setProfile(p);

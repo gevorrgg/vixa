@@ -138,7 +138,7 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
         setSubmitting(true);
         try {
             const presign = await apiFetch<PresignResponse>(
-                `/api/users/${userId}/videos/upload-url`,
+                `/api/videos/${userId}/upload-url`,
                 {
                     method: "POST",
                     body: JSON.stringify({
@@ -170,7 +170,7 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
 
 
 
-            await apiFetch(`/api/users/${userId}/videos`, {
+            await apiFetch(`/api/videos/${userId}`, {
                 method: "POST",
                 body: JSON.stringify({
                     title: title.trim(),

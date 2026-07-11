@@ -25,7 +25,7 @@ export function useProfileData(userId: number | null): UseProfileDataResult {
         const [p, s, v] = await Promise.all([
             apiFetch<ApiProfile>(`/api/users/${uid}/profile`),
             apiFetch<ApiStats>(`/api/users/${uid}/stats`),
-            apiFetch<{ videos: ApiVideo[] }>(`/api/users/${uid}/videos`),
+            apiFetch<{ videos: ApiVideo[] }>(`/api/videos/${uid}`),
         ]);
         setProfile(p);
         setStats(s);
@@ -40,7 +40,7 @@ export function useProfileData(userId: number | null): UseProfileDataResult {
         if (!userId) return;
         const [s, v] = await Promise.all([
             apiFetch<ApiStats>(`/api/users/${userId}/stats`),
-            apiFetch<{ videos: ApiVideo[] }>(`/api/users/${userId}/videos`),
+            apiFetch<{ videos: ApiVideo[] }>(`/api/videos/${userId}`),
         ]);
         setStats(s);
         setVideos(v.videos);
@@ -50,7 +50,7 @@ export function useProfileData(userId: number | null): UseProfileDataResult {
         async (videoId: number) => {
             if (!userId) return;
 
-            await apiFetch(`/api/users/${userId}/videos/${videoId}`, { method: "DELETE" });
+            await apiFetch(`/api/videos/${userId}/${videoId}`, { method: "DELETE" });
 
             const deletedVideo = videos.find((v) => v.id === videoId);
 

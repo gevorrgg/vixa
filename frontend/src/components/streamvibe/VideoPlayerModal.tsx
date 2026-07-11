@@ -20,7 +20,7 @@ export function VideoPlayerModal({
         async function checkLikeStatus() {
             try {
                 const result = await apiFetch<{ liked: boolean }>(
-                    `/api/users/${userId}/videos/${video.id}/like-status`
+                    `/api/videos/${userId}/${video.id}/like-status`
                 );
 
                 setLiked(result.liked);
@@ -60,7 +60,7 @@ export function VideoPlayerModal({
         setLikePending(true);
 
         try {
-            await apiFetch(`/api/users/${userId}/videos/${video.id}/like`, {
+            await apiFetch(`/api/videos/${userId}/${video.id}/like`, {
                 method: nextLiked ? "POST" : "DELETE",
             });
         } catch (err) {
