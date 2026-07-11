@@ -103,7 +103,7 @@ class VideoDao {
         const res = await db.query(sql, [videoId, userId])
         const liked = !!res.rows[0].liked
 
-        await redisClient.set(cacheKey, liked, {
+        await redisClient.set(cacheKey, String(liked), {
             EX: 300,
         })
 
