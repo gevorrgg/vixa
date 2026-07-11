@@ -113,7 +113,7 @@ export function ProfilePage() {
                     </div>
                 </div>
 
-                <div className="filter-chips">
+                {/* <div className="filter-chips">
                     {FILTER_CHIPS.map(([k, l]) => (
                         <div
                             key={k}
@@ -123,7 +123,7 @@ export function ProfilePage() {
                             {l}
                         </div>
                     ))}
-                </div>
+                </div> */}
 
                 <VideoGrid videos={filtered} onDelete={handleDeleteVideo} onOpenVideo={(video) => setSelectedVideo(video)} />
             </main>
