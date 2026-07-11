@@ -4,8 +4,8 @@ const { authMiddleware } = require('./middleware')
 
 const router = express.Router()
 
-router.get('/:userId/profile', ProfileController.getProfile)
-router.get('/:userId/profile/avatar-upload-url', ProfileController.getAvatarUploadUrl)
-router.patch('/:userId/profile', ProfileController.updateProfile)
+router.get('/', ProfileController.getProfile)
+router.get('/avatar-upload-url', ProfileController.getAvatarUploadUrl)
+router.patch('/', ProfileController.updateProfile)
 
 module.exports = router

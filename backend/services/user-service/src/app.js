@@ -13,8 +13,8 @@ app.use(express.json())
 
 // ===== API ROUTES =====
 app.use('/api/auth', authRouter)
+app.use('/api/users/:userId/profile', profileRouter)
 app.use('/api/users', userRouter)
-app.use('/api/users', profileRouter)
 
 // ===== health check =====
 app.get('/api/health', (req, res) => {
