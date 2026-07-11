@@ -10,9 +10,14 @@ export const GRADIENTS = [
 export const TAGS: Record<string, { label: string; cls: string }> = {
     music: { label: "Music", cls: "tag-cyan" },
     gaming: { label: "Gaming", cls: "tag-green" },
-    tutorial: { label: "Tutorial", cls: "tag-blue" },
+    education: { label: "Education", cls: "tag-blue" },
+    sports: { label: "Sports", cls: "tag-red" },
+    tech: { label: "Tech", cls: "tag-purple" },
+    entertainment: { label: "Entertainment", cls: "tag-orange" },
     vlog: { label: "Vlog", cls: "tag-pink" },
-    other: { label: "Other", cls: "tag-purple" },
+    social: { label: "Social", cls: "tag-yellow" },
+    kids: { label: "Kids", cls: "tag-lime" },
+    news: { label: "News", cls: "tag-gray" },
 };
 
 export const FILTER_CHIPS: [string, string][] = [
