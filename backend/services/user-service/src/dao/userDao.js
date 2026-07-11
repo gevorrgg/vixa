@@ -2,7 +2,6 @@ const db = require("../db/db")
 
 class UserDao {
     static async getUserInfo(userId) {
-        console.log(userId)
 
         const result = await db.query(
             `SELECT 
