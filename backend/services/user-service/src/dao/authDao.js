@@ -12,7 +12,7 @@ class AuthDao {
     }
 
     static async getUserByEmail (email) {
-        const cacheKey = `user:${username}`
+        const cacheKey = `user:${email}`
 
         const cachedUser = await redisClient.get(cachKey)
 
