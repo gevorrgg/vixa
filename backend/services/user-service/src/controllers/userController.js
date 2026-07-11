@@ -8,7 +8,7 @@ class UserController {
             return res.status(400).json({ ok: false, message: "Invalid userId" })
         }
 
-        const result = UserService.getUserStats(userId)
+        const result = await UserService.getUserStats(userId)
 
         if (!result.ok) { 
             return res.status(result.status).json({ok: false, message: result.message})
