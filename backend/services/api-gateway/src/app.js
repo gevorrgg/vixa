@@ -1,7 +1,5 @@
 const express = require("express");
-const {
-    createProxyMiddleware,
-} = require("http-proxy-middleware");
+const { createProxyMiddleware } = require("http-proxy-middleware");
 const path = require("path");
 require("dotenv").config();
 
@@ -22,34 +20,38 @@ const onProxyError = (err, req, res) => {
     }
 };
 
-const makeProxy = (targetEnvVar) =>
-    createProxyMiddleware({
-        router: () => {
-            const target = process.env[targetEnvVar];
+const makeProxy = (targetEnvVar) => {
+    const target = process.env[targetEnvVar];
 
-            if (!target) {
-                throw new Error(`${targetEnvVar} is not defined`);
-            }
+    if (!target) {
+        throw new Error(`${targetEnvVar} is not defined`);
+    }
 
-            return target;
-        },
+    try {
+        new URL(target);
+    } catch {
+        throw new Error(
+            `${targetEnvVar} must be a valid URL, received: ${target}`,
+        );
+    }
 
+    return createProxyMiddleware({
+        target,
         changeOrigin: true,
         proxyTimeout: 15000,
         timeout: 15000,
 
-        pathRewrite: (path, req) => {
-            console.log(
-                `[proxy] ${req.method} ${req.originalUrl} -> ${process.env[targetEnvVar]}${req.originalUrl}`,
-            );
-
-            return req.originalUrl;
-        },
-
         on: {
+            proxyReq(proxyReq, req) {
+                console.log(
+                    `[proxy] ${req.method} ${req.originalUrl} -> ${target}${req.originalUrl}`,
+                );
+            },
+
             error: onProxyError,
         },
     });
+};
 
 app.use("/api/auth", makeProxy("USER_SERVICE_URL"));
 app.use("/api/videos", makeProxy("VIDEO_SERVICE_URL"));
