@@ -43,12 +43,16 @@ class AuthService {
 
     static async registerUser (email, username, password) {
         try {
+            console.log9('SERVICE 1')
             const saltRounds = 10
             const passwordHash = await bcrypt.hash(password, saltRounds)
+            console.log9('SERVICE 2')
 
             const userId = await AuthDao.createUser(email, username, passwordHash)
+            console.log9('SERVICE 3')
 
             const jwtToken = generateJwtToken({ id: userId })
+            console.log9('SERVICE 4')
 
             return {
                 status: 200,
