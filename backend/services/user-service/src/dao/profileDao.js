@@ -26,6 +26,8 @@ class ProfileDao {
             redisClient.del(`user:${profile.userId}:hasProfile`),
             redisClient.del(`user:${profile.userId}:userInfo`),
         ])
+
+        console.log(`user:${profile.userId}`)
     }
 
     static async update (profile, userId) {
@@ -38,7 +40,7 @@ class ProfileDao {
 
         await Promise.all([
             redisClient.del(`user:${profile.userId}:hasProfile`),
-            redisClient.del(`del:${profile.userId}:userInfo`),
+            redisClient.del(`user:${profile.userId}:userInfo`),
         ])
     }
 

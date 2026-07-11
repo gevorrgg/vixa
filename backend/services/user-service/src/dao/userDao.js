@@ -8,6 +8,7 @@ class UserDao {
         const cached = await redisClient.get(cacheKey)
 
         if (cached !== null) {
+            console.log('cached')
             return JSON.parse(cached)
         }
 
