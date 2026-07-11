@@ -51,7 +51,7 @@ class AuthService {
             console.log9('SERVICE 3')
 
             const jwtToken = generateJwtToken({ id: userId })
-            console.log9('SERVICE 4')
+            console.log('SERVICE 4')
 
             return {
                 status: 200,
