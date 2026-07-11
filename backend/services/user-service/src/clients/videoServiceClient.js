@@ -20,6 +20,7 @@ class VideoClient {
             `${process.env.VIDEO_SERVICE_URL}/api/videos/${userId}/count`,
         )
 
+
         if (!response.ok) {
             return null
         }

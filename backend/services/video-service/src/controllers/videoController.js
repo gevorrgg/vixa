@@ -164,6 +164,18 @@ class VideoController {
 
         return res.json({ video })
     }
+
+    static async getVideosCount(req, res) { 
+        const userId = req.params.id
+
+        if (!userId || Number.isNaN(userId)) { 
+            return res.status(404).json({ok: false, message: 'Invalid userId'})
+        }
+
+        const videosCount = await VideoService.getVideosCount(userId)
+
+        return res.json({ok: true, videosCount: videosCount})
+    }
 }
 
 module.exports = VideoController
