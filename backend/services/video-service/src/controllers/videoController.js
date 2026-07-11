@@ -143,10 +143,7 @@ class VideoController {
             return res.status(400).json({ok: false, message: 'Invalid userId'})
         }
 
-
-        const totalViews = VideoService.getTotalViews(userId)
-
-        console.log(totalViews)
+        const totalViews = await VideoService.getTotalViews(userId)
 
         return res.json({ ok: true, totalViews: totalViews })
     }
