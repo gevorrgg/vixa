@@ -1,4 +1,3 @@
-const { redisClient } = require("../../../video-service/src/redis/redis")
 const db = require("../db/db")
 const { redisClient } = require("../redis/redis")
 
