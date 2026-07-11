@@ -166,7 +166,7 @@ class VideoController {
     }
 
     static async getVideosCount(req, res) { 
-        const userId = req.params.id
+        const userId = req.params.userId
 
         if (!userId || Number.isNaN(userId)) { 
             return res.status(404).json({ok: false, message: 'Invalid userId'})
