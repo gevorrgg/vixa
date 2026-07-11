@@ -8,7 +8,7 @@ class VideoDao {
         const cachedVideos = await redisClient.get(cacheKey)
 
         if (cachedVideos !== null) { 
-            return JSON.parce(cachedVideos)
+            return JSON.parse(cachedVideos)
         }
 
         const result = await db.query(`SELECT * FROM videos WHERE user_id = $1`, [userId])
