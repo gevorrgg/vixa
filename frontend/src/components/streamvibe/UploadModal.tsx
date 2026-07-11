@@ -296,10 +296,16 @@ export function UploadModal({ userId, onClose, onPublished, onError }: Props) {
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                     >
-                        <option value="tutorial">Tutorial</option>
-                        <option value="vlog">Vlog</option>
                         <option value="music">Music</option>
                         <option value="gaming">Gaming</option>
+                        <option value="education">Education</option>
+                        <option value="sports">Sports</option>
+                        <option value="tech">Tech</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="vlog">Vlog</option>
+                        <option value="social">Social</option>
+                        <option value="kids">Kids</option>
+                        <option value="news">News</option>
                         <option value="other">Other</option>
                     </select>
                 </div>

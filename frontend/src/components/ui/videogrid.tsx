@@ -55,7 +55,6 @@ export function VideoGrid({ videos, onDelete, onOpenVideo, showActions = true }:
                                         onClose={() => setOpenMenuId(null)}
                                         onEdit={() => {
                                             setOpenMenuId(null);
-                                            // TODO: подключить редактирование видео
                                         }}
                                         onDelete={() => {
                                             setOpenMenuId(null);
