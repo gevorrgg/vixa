@@ -91,8 +91,6 @@ class UserController {
       static async getProfile (req, res) {
         const userId = req.params.userId
 
-        console.log(req.params)
-
         if (Number.isNaN(userId)) {
             return res
                 .status(400)
