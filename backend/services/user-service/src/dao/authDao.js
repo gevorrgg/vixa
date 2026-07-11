@@ -2,20 +2,12 @@ const db = require('../db/db')
 
 class AuthDao {
     static async createUser(email, username, passwordHash) {
-
-        try {
-
-            console.log('before')
             const result = await db.query(
                 `INSERT INTO users(email, username, password_hash) VALUES ($1, $2, $3) RETURNING id`,
                 [email, username, passwordHash]
             )
-            console.log('after')
+
             return result.rows[0].id
-        } catch (error) { 
-            console.log(error)
-            return null
-        }
     }
 
 
