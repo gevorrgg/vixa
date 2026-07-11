@@ -1,7 +1,9 @@
 const db = require("../db/db")
 
 class UserDao {
-    static async getUserInfo (userId) {
+    static async getUserInfo(userId) {
+        console.log(userId)
+
         const result = await db.query(
             `SELECT 
             users.id,
@@ -24,8 +26,6 @@ class UserDao {
         )
 
         const row = result.rows[0]
-
-        console.log(row)
 
         if (!row) return null
 
