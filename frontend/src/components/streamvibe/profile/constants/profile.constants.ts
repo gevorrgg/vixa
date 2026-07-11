@@ -8,6 +8,7 @@ export const GRADIENTS = [
 ];
 
 export const TAGS: Record<string, { label: string; cls: string }> = {
+    all: { label: "All", cls: "tag-gray" },
     music: { label: "Music", cls: "tag-cyan" },
     gaming: { label: "Gaming", cls: "tag-green" },
     education: { label: "Education", cls: "tag-blue" },
