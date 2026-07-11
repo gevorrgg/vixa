@@ -59,7 +59,6 @@ class AuthService {
                 },
             }
         } catch (error) {
-            console.log(error)
             return this.#handleDbError(error)
         }
     }
