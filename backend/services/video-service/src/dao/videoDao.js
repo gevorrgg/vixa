@@ -110,6 +110,15 @@ class VideoDao {
 
         return Number(result.rows[0].totalviews)
     }
+
+    static async getVideoById (videoId) {
+        const result = await db.query(
+            `SELECT * FROM videos WHERE id = $1`,
+            [videoId],
+        )
+
+        return result.rows[0] || null
+    }
 }
 
 module.exports = VideoDao

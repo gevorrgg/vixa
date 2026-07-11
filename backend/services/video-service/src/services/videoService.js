@@ -177,6 +177,33 @@ class VideoService {
 
         return totalViews
     }
+
+    static async getVideoById (videoId) {
+        const dbVideo = await VideoDao.getVideoById(videoId)
+
+        if (!dbVideo) {
+            return null
+        }
+
+        const contentUrl = dbVideo.content_key
+            ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${dbVideo.content_key}`
+            : null
+        const thumbnailUrl = dbVideo.thumbnail_key
+            ? `https://${process.env.CLOUD_FRONT_DOMAIN}/${dbVideo.thumbnail_key}`
+            : null
+
+        return {
+            id: dbVideo.id,
+            userId: dbVideo.user_id,
+            title: dbVideo.title,
+            description: dbVideo.description,
+            contentUrl: contentUrl,
+            date: dbVideo.created_at,
+            thumbnailUrl: thumbnailUrl,
+            duration: dbVideo.duration,
+            likes: dbVideo.likes,
+        }
+    }
 }
 
 module.exports = VideoService

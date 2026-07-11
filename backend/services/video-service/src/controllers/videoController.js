@@ -148,6 +148,22 @@ class VideoController {
 
         return res.json({ ok: true, totalViews: totalViews })
     }
+
+    static async getVideoById(req, res) {
+        const videoId = req.params.videoId
+
+        if (!videoId) {
+            return res.status(400).json({ ok: false, message: 'Invalid videoId' })
+        }
+
+        const video = await VideoService.getVideoById(videoId)
+
+        if (!video) {
+            return res.status(404).json({ ok: false, message: 'Video not found' })
+        }
+
+        return res.json({ video })
+    }
 }
 
 module.exports = VideoController

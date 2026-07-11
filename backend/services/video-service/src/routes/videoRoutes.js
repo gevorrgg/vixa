@@ -4,6 +4,7 @@ const { authMiddleware } = require('./middleware')
 
 const router = express.Router()
 
+// Get all videos by user
 router.get('/:userId', VideoController.getUserVideos)
 router.post(
     '/:userId/upload-url',

@@ -8,10 +8,9 @@ const videoRouter = require("./routes/videoRoutes")
 const app = express()
 
 app.use(express.json())
-app.use(express.static(path.join(__dirname, "dist")))
 
 // ===== API ROUTES =====
-app.use("/api/users", videoRouter)
+app.use("/api/videos", videoRouter)
 
 // ===== health check =====
 app.get("/api/health", (req, res) => {
